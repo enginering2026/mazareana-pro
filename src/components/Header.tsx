@@ -119,7 +119,7 @@ export const Header = () => {
       <div className="flex items-center gap-1.5">
         {/* App / Farm Official Logo */}
         <img
-          src="/logo.png"
+          src={`${import.meta.env.BASE_URL}logo.png`}
           alt="شعار المنظومة"
           className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shadow-2xs border border-slate-200/90 dark:border-slate-700 select-none shrink-0"
         />

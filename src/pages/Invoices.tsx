@@ -328,7 +328,7 @@ function generateInvoiceHtml(invoice: any, farm: any, forPrint: boolean = false)
     <!-- Header -->
     <div class="header-bar">
       <div class="brand-box">
-        <img src="/logo.png" alt="الشعار" class="brand-logo" onerror="this.style.display='none'" />
+        <img src="${import.meta.env.BASE_URL}logo.png" alt="الشعار" class="brand-logo" onerror="this.style.display='none'" />
         <div>
           <h1 class="brand-title">${farmName}</h1>
           <p class="brand-subtitle">سجل تجاري وبطاقة ضريبية معتمدة • ${farmLocation}</p>

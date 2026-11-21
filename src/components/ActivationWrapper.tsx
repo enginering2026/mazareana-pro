@@ -428,7 +428,7 @@ const AppLogoBadge = () => (
   <div className="relative w-20 h-20 rounded-full bg-slate-900/90 border-2 border-blue-400/40 shadow-2xl flex flex-col items-center justify-center p-2 mx-auto backdrop-blur-md">
     <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-blue-500 flex items-center justify-center shadow-lg transform -rotate-3 overflow-hidden">
       <img
-        src="/logo.png"
+        src={`${import.meta.env.BASE_URL}logo.png`}
         alt="Logo"
         className="w-full h-full object-contain p-0.5"
         onError={(e) => {

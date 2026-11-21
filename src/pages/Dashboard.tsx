@@ -657,7 +657,7 @@ export default function Dashboard() {
         style={{
           position: "relative",
           overflow: "hidden",
-          background: "url('/assets/dashboard-banner.jpg') center / cover no-repeat",
+          background: `url('${import.meta.env.BASE_URL}assets/dashboard-banner.jpg') center / cover no-repeat`,
           borderRadius: "0 0 36px 36px",
           padding: "36px 18px 78px",
           color: "#fff",
