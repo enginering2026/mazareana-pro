@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => ({
         background_color: "#0f0f1a",
         display: "standalone",
         orientation: "portrait",
+        id: mode === 'production' ? '/mazareana-pro/' : '/',
         scope: mode === 'production' ? '/mazareana-pro/' : '/',
         start_url: mode === 'production' ? '/mazareana-pro/' : '/',
         lang: "ar",
@@ -34,51 +35,29 @@ export default defineConfig(({ mode }) => ({
         categories: ["finance", "business", "productivity"],
         icons: [
           {
-            src: "icons/icon-48.webp",
-            sizes: "48x48",
-            type: "image/webp",
-            purpose: "any maskable",
-          },
-          {
-            src: "icons/icon-72.webp",
-            sizes: "72x72",
-            type: "image/webp",
-            purpose: "any maskable",
-          },
-          {
-            src: "icons/icon-96.webp",
-            sizes: "96x96",
-            type: "image/webp",
-            purpose: "any maskable",
-          },
-          {
-            src: "icons/icon-128.webp",
-            sizes: "128x128",
-            type: "image/webp",
-            purpose: "any maskable",
-          },
-          {
-            src: "icons/icon-192.webp",
+            src: "icons/icon-192.png",
             sizes: "192x192",
-            type: "image/webp",
-            purpose: "any maskable",
+            type: "image/png",
+            purpose: "any",
           },
           {
-            src: "icons/icon-256.webp",
-            sizes: "256x256",
-            type: "image/webp",
-            purpose: "any maskable",
-          },
-          {
-            src: "icons/icon-512.webp",
+            src: "icons/icon-512.png",
             sizes: "512x512",
-            type: "image/webp",
-            purpose: "any maskable",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "icons/maskable-icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
       workbox: {
-        // Cache كل الأصول الأساسية للعمل بدون نت
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
         // استراتيجية: استخدام الـ cache أولاً، تحديث في الخلفية
         runtimeCaching: [
