@@ -186,7 +186,7 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
         </OnboardingGate>
