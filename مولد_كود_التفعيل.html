@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang=ar dir=rtl>
+<head>
+  <meta charset=UTF-8>
+  <meta name=viewport content=width=device-width, initial-scale=1.0>
+  <title>مولد كود التفعيل | Mazareana Pro</title>
+  <link rel=preconnect href=https://fonts.googleapis.com>
+  <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+  <link href=https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap rel=stylesheet>
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --primary-glow: rgba(16, 185, 129, 0.35);
+      --bg-dark: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, var(--bg-dark) 70%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .background-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.25;
+    }
+
+    .blob-1 {
+      width: 400px;
+      height: 400px;
+      background: #10b981;
+      top: 10%;
+      right: 15%;
+    }
+
+    .blob-2 {
+      width: 350px;
+      height: 350px;
+      background: #6366f1;
+      bottom: 15%;
+      left: 10%;
+    }
+
+    .card {
+      position: relative;
+      z-index: 10;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.08);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      background: rgba(10, 15, 30, 0.7);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 2px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+      background: rgba(10, 15, 30, 0.95);
+    }
+
+    input::placeholder {
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      letter-spacing: normal;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .btn-generate {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+      margin-bottom: 24px;
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px -5px rgba(16, 185, 129, 0.55);
+      background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+    }
+
+    .btn-generate:active {
+      transform: translateY(0);
+    }
+
+    .result-box {
+      background: rgba(6, 95, 70, 0.15);
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      display: none;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .result-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6ee7b7;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .result-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 900;
+      color: #10b981;
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      user-select: all;
+      margin-bottom: 12px;
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-whatsapp {
+      background: rgba(37, 211, 102, 0.15);
+      border-color: rgba(37, 211, 102, 0.35);
+      color: #4ade80;
+    }
+
+    .btn-whatsapp:hover {
+      background: rgba(37, 211, 102, 0.25);
+    }
+
+    .master-key-box {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .master-code {
+      font-family: 'JetBrains Mono', monospace;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.15);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      background: #10b981;
+      color: #064e3b;
+      font-weight: 800;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-size: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="card">
+    <div class="header">
+      <div class="badge">
+        <span>🛡️</span>
+        <span>Mazareana Pro Generator</span>
+      </div>
+      <h1>مولد كود تفعيل التطبيق</h1>
+      <p class="subtitle">أدخل رمز جهاز العميل المكون من 6 أرقام لتوليد كود التفعيل الخاص به فوراً</p>
+    </div>
+
+    <div class="form-group">
+      <label for="deviceId">رمز الجهاز (Device ID)</label>
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          id="deviceId" 
+          placeholder="مثال: 684251" 
+          maxlength="10" 
+          autocomplete="off"
+          autofocus
+        >
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generateKey()">
+      <span>⚡</span>
+      <span>توليد كود التفعيل</span>
+    </button>
+
+    <div id="resultBox" class="result-box">
+      <div class="result-label">كود التفعيل الخاص بالجهاز:</div>
+      <div id="generatedKey" class="result-key">------</div>
+      
+      <div class="btn-group">
+        <button class="btn-action" onclick="copyKey()">
+          <span>📋</span>
+          <span>نسخ الكود</span>
+        </button>
+        <button class="btn-action btn-whatsapp" onclick="shareWhatsApp()">
+          <span>💬</span>
+          <span>إرسال واتساب</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="master-key-box">
+      <span>الكود الرئيسي الدائم (Master Key):</span>
+      <span class="master-code" title="اضغط للنسخ" onclick="copyText('MashrouaMalia2026', 'تم نسخ الكود الرئيسي!')">MashrouaMalia2026</span>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">تم النسخ إلى الحافظة بنجاح!</div>
+
+  <script>
+    const deviceIdInput = document.getElementById("deviceId");
+    const resultBox = document.getElementById("resultBox");
+    const generatedKeyEl = document.getElementById("generatedKey");
+    const toast = document.getElementById("toast");
+
+    // Realtime formatting & Enter key trigger
+    deviceIdInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        generateKey();
+      }
+    });
+
+    deviceIdInput.addEventListener("input", () => {
+      // Allow only numbers
+      deviceIdInput.value = deviceIdInput.value.replace(/[^0-9]/g, '');
+      if (deviceIdInput.value.length >= 6) {
+        generateKey();
+      }
+    });
+
+    function calculateKey(devId) {
+      const numericDevId = parseInt(devId, 10);
+      if (isNaN(numericDevId)) return null;
+      // Formula: ((devId * 3) + 123456) % 1000000
+      const calculated = ((numericDevId * 3) + 123456) % 1000000;
+      return calculated.toString();
+    }
+
+    function generateKey() {
+      const devId = deviceIdInput.value.trim();
+      if (!devId) {
+        showToast("يرجى كتابة رمز الجهاز أولاً", "#f43f5e", "#fff");
+        deviceIdInput.focus();
+        return;
+      }
+
+      const key = calculateKey(devId);
+      if (key === null) {
+        showToast("رمز الجهاز يجب أن يكون أرقاماً فقط", "#f43f5e", "#fff");
+        return;
+      }
+
+      generatedKeyEl.textContent = key;
+      resultBox.style.display = "block";
+    }
+
+    function copyKey() {
+      const key = generatedKeyEl.textContent;
+      if (!key || key === "------") return;
+      copyText(key, `تم نسخ كود التفعيل: ${key}`);
+    }
+
+    function shareWhatsApp() {
+      const devId = deviceIdInput.value.trim();
+      const key = generatedKeyEl.textContent;
+      if (!key || key === "------") return;
+
+      const message = encodeURIComponent(
+        `أهلاً بك!\nكود تفعيل تطبيق Mazareana Pro الخاص بجهازك (${devId}) هو:\n\n🔑 ${key}\n\nشكراً لاستخدامك التطبيق!`
+      );
+      window.open(`https://wa.me/?text=${message}`, "_blank");
+    }
+
+    function copyText(text, msg) {
+      if (window.AndroidApp && window.AndroidApp.copyToClipboard) {
+        window.AndroidApp.copyToClipboard(text);
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(msg || "تم النسخ بنجاح!");
+        }).catch(() => {
+          showToast(msg || "تم النسخ بنجاح!");
+        });
+      } else {
+        showToast(msg || "تم النسخ بنجاح!");
+      }
+    }
+
+    function showToast(text, bg = "#10b981", color = "#064e3b") {
+      toast.textContent = text;
+      toast.style.background = bg;
+      toast.style.color = color;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

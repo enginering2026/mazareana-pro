@@ -1,0 +1,481 @@
+{
+  "backup_meta": {
+    "version": "1.0.0",
+    "appName": "المشروع المالي لإدارة المزارع والمؤسسات",
+    "exportDate": "2026-10-15T16:45:00.000Z",
+    "description": "نسخة احتياطية تجريبية شاملة وجاهزة للاستيراد المباشر",
+    "farmCount": 2,
+    "revenueCount": 8,
+    "expenseCount": 8,
+    "clientCount": 4,
+    "invoiceCount": 4,
+    "partnerCount": 3
+  },
+  "current_farm_id": "farm-demo-01",
+  "app_settings": {
+    "darkMode": false,
+    "language": "ar",
+    "monthlyExpenseLimit": 75000,
+    "pdfExport": true,
+    "autoBackup": true,
+    "notifications": true,
+    "currency": "EGP"
+  },
+  "local_farms": [
+    {
+      "id": "farm-demo-01",
+      "name": "مزرعة الأمل للدواجن والإنتاج الحيواني",
+      "type": "دواجن وتسمين",
+      "location": "الكيلو 58 - طريق مصر الإسكندرية الصحراوي",
+      "description": "مزرعة متكاملة لتربية دجاج التسمين وإنتاج بيض المائدة بطاقة 30,000 طائر",
+      "createdAt": "2026-01-10T08:00:00.000Z"
+    },
+    {
+      "id": "farm-demo-02",
+      "name": "مزرعة النماء للزراعة والإنتاج النباتي",
+      "type": "محاصيل وخضراوات",
+      "location": "الشرقية - الصالحية الجديدة",
+      "description": "إنتاج محاصيل الخضر العضوية والحبوب وصوب زراعية حديثة",
+      "createdAt": "2026-02-15T10:30:00.000Z"
+    }
+  ],
+  "local_clients": [
+    {
+      "id": "client-demo-01",
+      "farmId": "farm-demo-01",
+      "name": "شركة البركة للتوزيع والتجارة",
+      "type": "عميل",
+      "phone": "01012345678",
+      "email": "albaraka@example.com",
+      "notes": "عميل رئيسي لتوزيع بيض المائدة والدواجن بالقاهرة الكبرى",
+      "invoices": 2,
+      "totalAmount": 145000
+    },
+    {
+      "id": "client-demo-02",
+      "farmId": "farm-demo-01",
+      "name": "مؤسسة النور لتجارة المواد الغذائية",
+      "type": "عميل",
+      "phone": "01198765432",
+      "email": "alnoor.food@example.com",
+      "notes": "دفعات منتظمة بشيكات بنكية",
+      "invoices": 1,
+      "totalAmount": 82000
+    },
+    {
+      "id": "client-demo-03",
+      "farmId": "farm-demo-01",
+      "name": "شركة الإيمان للأعلاف والمستلزمات",
+      "type": "مورد",
+      "phone": "01234567890",
+      "email": "info@aleman-feeds.com",
+      "notes": "مورد الأعلاف المركزة والمكملات الغذائية",
+      "invoices": 1,
+      "totalAmount": 95000
+    },
+    {
+      "id": "client-demo-04",
+      "farmId": "farm-demo-01",
+      "name": "سوبرماركت المدينة المنورة",
+      "type": "عميل ومورد",
+      "phone": "01555544433",
+      "email": "madina.market@example.com",
+      "notes": "سحب أسبوعي لكراتين البيض الطازج",
+      "invoices": 1,
+      "totalAmount": 28500
+    }
+  ],
+  "local_revenues": [
+    {
+      "id": "rev-demo-01",
+      "farmId": "farm-demo-01",
+      "type": "بيض مائدة",
+      "amount": 45000,
+      "date": "2026-10-14",
+      "quantity": 300,
+      "unitPrice": 150,
+      "clientId": "client-demo-01",
+      "paymentMethod": "تحويل بنكي",
+      "notes": "توريد 300 كرتونة بيض أحمر نخب أول لشركة البركة",
+      "createdAt": "2026-10-14T09:30:00.000Z"
+    },
+    {
+      "id": "rev-demo-02",
+      "farmId": "farm-demo-01",
+      "type": "دجاج تسمين",
+      "amount": 78000,
+      "date": "2026-10-12",
+      "quantity": 800,
+      "unitPrice": 97.5,
+      "clientId": "client-demo-02",
+      "paymentMethod": "نقدي",
+      "notes": "بيع دفعة دجاج لحم وزن متوسط 2.2 كجم لمؤسسة النور",
+      "createdAt": "2026-10-12T14:15:00.000Z"
+    },
+    {
+      "id": "rev-demo-03",
+      "farmId": "farm-demo-01",
+      "type": "بيض مائدة",
+      "amount": 28500,
+      "date": "2026-10-09",
+      "quantity": 190,
+      "unitPrice": 150,
+      "clientId": "client-demo-04",
+      "paymentMethod": "نقدي",
+      "notes": "سحب أسبوعي بيض مائدة أبيض لسوبرماركت المدينة",
+      "createdAt": "2026-10-09T11:00:00.000Z"
+    },
+    {
+      "id": "rev-demo-04",
+      "farmId": "farm-demo-01",
+      "type": "سماد عضوي (سباخ)",
+      "amount": 16000,
+      "date": "2026-10-05",
+      "quantity": 40,
+      "unitPrice": 400,
+      "clientId": null,
+      "paymentMethod": "نقدي",
+      "notes": "بيع مخلفات عنابر تسميد لمزارع الفاكهة المجاورة",
+      "createdAt": "2026-10-05T16:20:00.000Z"
+    },
+    {
+      "id": "rev-demo-05",
+      "farmId": "farm-demo-01",
+      "type": "بيض مائدة",
+      "amount": 52500,
+      "date": "2026-09-28",
+      "quantity": 350,
+      "unitPrice": 150,
+      "clientId": "client-demo-01",
+      "paymentMethod": "آجل",
+      "notes": "توريد بيض أحمر لشركة البركة للتوزيع",
+      "createdAt": "2026-09-28T10:00:00.000Z"
+    },
+    {
+      "id": "rev-demo-06",
+      "farmId": "farm-demo-01",
+      "type": "دجاج بياض منتهي الإنتاج",
+      "amount": 34000,
+      "date": "2026-09-15",
+      "quantity": 400,
+      "unitPrice": 85,
+      "clientId": "client-demo-02",
+      "paymentMethod": "نقدي",
+      "notes": "بيع أمهات بياض للتجار المتخصصين",
+      "createdAt": "2026-09-15T13:40:00.000Z"
+    },
+    {
+      "id": "rev-demo-07",
+      "farmId": "farm-demo-02",
+      "type": "طماطم صوب",
+      "amount": 42000,
+      "date": "2026-10-10",
+      "quantity": 3500,
+      "unitPrice": 12,
+      "clientId": "client-demo-02",
+      "paymentMethod": "نقدي",
+      "notes": "قطفة طماطم سلك فرز أول لصالح مؤسسة النور",
+      "createdAt": "2026-10-10T08:15:00.000Z"
+    },
+    {
+      "id": "rev-demo-08",
+      "farmId": "farm-demo-02",
+      "type": "خيار صوب",
+      "amount": 25000,
+      "date": "2026-10-03",
+      "quantity": 2500,
+      "unitPrice": 10,
+      "clientId": "client-demo-04",
+      "paymentMethod": "نقدي",
+      "notes": "توريد خيار فاخر لسوبرماركت المدينة",
+      "createdAt": "2026-10-03T11:45:00.000Z"
+    }
+  ],
+  "local_expenses": [
+    {
+      "id": "exp-demo-01",
+      "farmId": "farm-demo-01",
+      "category": "أعلاف",
+      "amount": 55000,
+      "date": "2026-10-13",
+      "description": "شراء 2.5 طن علف نامي 21% بروتين من شركة الإيمان",
+      "quantity": 2.5,
+      "unitPrice": 22000,
+      "paymentMethod": "تحويل بنكي",
+      "paidAmount": 55000,
+      "supplierName": "شركة الإيمان للأعلاف",
+      "clientId": "client-demo-03",
+      "createdAt": "2026-10-13T10:00:00.000Z"
+    },
+    {
+      "id": "exp-demo-02",
+      "farmId": "farm-demo-01",
+      "category": "أدوية وتحصينات",
+      "amount": 12500,
+      "date": "2026-10-11",
+      "description": "جرعة تحصين نيوكاسل + فيتامينات وأملاح لرفع المناعة",
+      "quantity": 1,
+      "unitPrice": 12500,
+      "paymentMethod": "نقدي",
+      "paidAmount": 12500,
+      "supplierName": "صيدلية النخبة البيطرية",
+      "clientId": null,
+      "createdAt": "2026-10-11T12:30:00.000Z"
+    },
+    {
+      "id": "exp-demo-03",
+      "farmId": "farm-demo-01",
+      "category": "كهرباء وطاقة",
+      "amount": 9200,
+      "date": "2026-10-08",
+      "description": "فاتورة استهلاك الكهرباء لعنابر التسمين والمولدات الاحتياطية",
+      "quantity": 1,
+      "unitPrice": 9200,
+      "paymentMethod": "نقدي",
+      "paidAmount": 9200,
+      "supplierName": "شركة توزيع الكهرباء",
+      "clientId": null,
+      "createdAt": "2026-10-08T09:15:00.000Z"
+    },
+    {
+      "id": "exp-demo-04",
+      "farmId": "farm-demo-01",
+      "category": "رواتب وعمالة",
+      "amount": 24000,
+      "date": "2026-10-01",
+      "description": "رواتب شهر سبتمبر للمهندس المشرف والعمال ومسؤول العنابر",
+      "quantity": 4,
+      "unitPrice": 6000,
+      "paymentMethod": "نقدي",
+      "paidAmount": 24000,
+      "supplierName": "طاقم العمل بالمزرعة",
+      "clientId": null,
+      "createdAt": "2026-10-01T15:00:00.000Z"
+    },
+    {
+      "id": "exp-demo-05",
+      "farmId": "farm-demo-01",
+      "category": "صيانة ومعدات",
+      "amount": 6800,
+      "date": "2026-09-25",
+      "description": "صيانة سيور العلف وشفاطات التهوية عنبر رقم 2",
+      "quantity": 1,
+      "unitPrice": 6800,
+      "paymentMethod": "نقدي",
+      "paidAmount": 6800,
+      "supplierName": "ورشة السلام للميكانيكا",
+      "clientId": null,
+      "createdAt": "2026-09-25T14:20:00.000Z"
+    },
+    {
+      "id": "exp-demo-06",
+      "farmId": "farm-demo-01",
+      "category": "نشارة وفرشة",
+      "amount": 7500,
+      "date": "2026-09-18",
+      "description": "توريد نشارة خشب بيضاء معقمة لفرشة عنابر التسمين",
+      "quantity": 150,
+      "unitPrice": 50,
+      "paymentMethod": "نقدي",
+      "paidAmount": 7500,
+      "supplierName": "مستودع الأهرام للأخشاب",
+      "clientId": null,
+      "createdAt": "2026-09-18T11:10:00.000Z"
+    },
+    {
+      "id": "exp-demo-07",
+      "farmId": "farm-demo-02",
+      "category": "أسمدة ومغذيات",
+      "amount": 18000,
+      "date": "2026-10-06",
+      "description": "شراء سلفات بوتاسيوم ونترات كالسيوم لتسميد الصوب",
+      "quantity": 20,
+      "unitPrice": 900,
+      "paymentMethod": "نقدي",
+      "paidAmount": 18000,
+      "supplierName": "شركة الدلتا للأسمدة",
+      "clientId": null,
+      "createdAt": "2026-10-06T10:00:00.000Z"
+    },
+    {
+      "id": "exp-demo-08",
+      "farmId": "farm-demo-02",
+      "category": "شبكات ري ومضخات",
+      "amount": 8500,
+      "date": "2026-09-29",
+      "description": "تغيير خراطيم تنقيط وفلاتر مضخة البئر الجوفي",
+      "quantity": 1,
+      "unitPrice": 8500,
+      "paymentMethod": "نقدي",
+      "paidAmount": 8500,
+      "supplierName": "مؤسسة الري الحديث",
+      "clientId": null,
+      "createdAt": "2026-09-29T16:00:00.000Z"
+    }
+  ],
+  "local_invoices": [
+    {
+      "id": "inv-demo-01",
+      "farmId": "farm-demo-01",
+      "number": "INV-2026-001",
+      "clientName": "شركة البركة للتوزيع والتجارة",
+      "type": "بيع بيض مائدة",
+      "date": "2026-10-14",
+      "paymentMethod": "تحويل بنكي",
+      "totalAmount": 45000,
+      "status": "مدفوعة",
+      "items": [
+        {
+          "type": "كرتونة بيض أحمر نخب أول",
+          "quantity": 300,
+          "unitPrice": 150,
+          "total": 45000
+        }
+      ],
+      "createdAt": "2026-10-14T09:30:00.000Z"
+    },
+    {
+      "id": "inv-demo-02",
+      "farmId": "farm-demo-01",
+      "number": "INV-2026-002",
+      "clientName": "مؤسسة النور لتجارة المواد الغذائية",
+      "type": "بيع دواجن تسمين",
+      "date": "2026-10-12",
+      "paymentMethod": "نقدي",
+      "totalAmount": 78000,
+      "status": "مدفوعة",
+      "items": [
+        {
+          "type": "دجاج لحم حي وزن 2.2 كجم",
+          "quantity": 800,
+          "unitPrice": 97.5,
+          "total": 78000
+        }
+      ],
+      "createdAt": "2026-10-12T14:15:00.000Z"
+    },
+    {
+      "id": "inv-demo-03",
+      "farmId": "farm-demo-01",
+      "number": "INV-2026-003",
+      "clientName": "شركة البركة للتوزيع والتجارة",
+      "type": "بيع بيض مائدة آجل",
+      "date": "2026-09-28",
+      "paymentMethod": "آجل",
+      "totalAmount": 52500,
+      "status": "غير مدفوعة",
+      "items": [
+        {
+          "type": "كرتونة بيض أحمر ممتاز",
+          "quantity": 350,
+          "unitPrice": 150,
+          "total": 52500
+        }
+      ],
+      "createdAt": "2026-09-28T10:00:00.000Z"
+    },
+    {
+      "id": "inv-demo-04",
+      "farmId": "farm-demo-01",
+      "number": "INV-2026-004",
+      "clientName": "سوبرماركت المدينة المنورة",
+      "type": "توريد أسبوعي",
+      "date": "2026-10-09",
+      "paymentMethod": "نقدي",
+      "totalAmount": 28500,
+      "status": "مدفوعة",
+      "items": [
+        {
+          "type": "كرتونة بيض أبيض طازج",
+          "quantity": 190,
+          "unitPrice": 150,
+          "total": 28500
+        }
+      ],
+      "createdAt": "2026-10-09T11:00:00.000Z"
+    }
+  ],
+  "local_partners": [
+    {
+      "id": "partner-demo-01",
+      "farmId": "farm-demo-01",
+      "name": "الحاج عبد الرحمن الشريف",
+      "phone": "01001122334",
+      "address": "القاهرة - مصر الجديدة",
+      "partnershipPercentage": 45,
+      "openingBalance": 250000,
+      "createdAt": "2026-01-10T09:00:00.000Z"
+    },
+    {
+      "id": "partner-demo-02",
+      "farmId": "farm-demo-01",
+      "name": "المهندس أسامة فتحي",
+      "phone": "01122334455",
+      "address": "الجيزة - الدقي",
+      "partnershipPercentage": 35,
+      "openingBalance": 180000,
+      "createdAt": "2026-01-10T09:00:00.000Z"
+    },
+    {
+      "id": "partner-demo-03",
+      "farmId": "farm-demo-01",
+      "name": "الأستاذ طارق سالم",
+      "phone": "01233445566",
+      "address": "الإسكندرية - سموحة",
+      "partnershipPercentage": 20,
+      "openingBalance": 100000,
+      "createdAt": "2026-01-10T09:00:00.000Z"
+    }
+  ],
+  "local_payments": [
+    {
+      "id": "pay-demo-01",
+      "farmId": "farm-demo-01",
+      "clientId": "client-demo-01",
+      "amount": 45000,
+      "date": "2026-10-14",
+      "notes": "سداد قيمة فاتورة رقم INV-2026-001 تحويل بنكي",
+      "createdAt": "2026-10-14T10:00:00.000Z"
+    },
+    {
+      "id": "pay-demo-02",
+      "farmId": "farm-demo-01",
+      "clientId": "client-demo-02",
+      "amount": 78000,
+      "date": "2026-10-12",
+      "notes": "سداد نقدي عند الاستلام فاتورة رقم INV-2026-002",
+      "createdAt": "2026-10-12T14:30:00.000Z"
+    },
+    {
+      "id": "pay-demo-03",
+      "farmId": "farm-demo-01",
+      "clientId": "client-demo-04",
+      "amount": 28500,
+      "date": "2026-10-09",
+      "notes": "سداد نقدي فاتورة رقم INV-2026-004",
+      "createdAt": "2026-10-09T11:30:00.000Z"
+    }
+  ],
+  "local_expense_payments": [
+    {
+      "id": "exppay-demo-01",
+      "farmId": "farm-demo-01",
+      "expenseId": "exp-demo-01",
+      "clientId": "client-demo-03",
+      "amount": 55000,
+      "date": "2026-10-13",
+      "notes": "سداد كامل فاتورة العلف لشركة الإيمان",
+      "createdAt": "2026-10-13T10:30:00.000Z"
+    },
+    {
+      "id": "exppay-demo-02",
+      "farmId": "farm-demo-01",
+      "expenseId": "exp-demo-04",
+      "clientId": null,
+      "amount": 24000,
+      "date": "2026-10-01",
+      "notes": "تسليم رواتب العمال والمهندسين نقداً",
+      "createdAt": "2026-10-01T15:30:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mazareana Pro</string>
+    <string name="title_activity_main">Mazareana Pro</string>
+    <string name="package_name">com.elmashrouaalmalia.app</string>
+    <string name="custom_url_scheme">com.elmashrouaalmalia.app</string>
+</resources>

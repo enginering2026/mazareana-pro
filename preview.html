@@ -1,0 +1,401 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم - مزرعة النخيل</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #f1f5f9;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased pb-20 text-[12px] flex justify-center min-h-screen bg-slate-100">
+
+  <main class="w-full max-w-md min-h-screen bg-slate-50 relative shadow-lg flex flex-col">
+
+    <!-- Top App Bar -->
+    <header class="px-3.5 py-2 flex items-center justify-between bg-white border-b border-slate-100 sticky top-0 z-30 shadow-sm">
+      <div class="flex items-center gap-1.5">
+        <!-- Farm Logo -->
+        <div class="w-7 h-7 rounded-full border border-emerald-200 overflow-hidden bg-emerald-50 flex items-center justify-center p-0.5 shadow-sm shrink-0">
+          <svg viewBox="0 0 64 64" fill="none" class="w-full h-full">
+            <rect width="64" height="64" rx="32" fill="#ecfdf5"/>
+            <path d="M32 58V26" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+            <path d="M32 26C32 26 24 14 12 18C12 28 24 30 32 30" fill="#10b981" fill-opacity="0.3" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M32 26C32 26 40 14 52 18C52 28 40 30 32 30" fill="#10b981" fill-opacity="0.3" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M32 20C32 20 20 8 16 22C24 26 30 24 32 24" stroke="#047857" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M32 20C32 20 44 8 48 22C40 26 34 24 32 24" stroke="#047857" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        
+        <div class="relative">
+          <button class="p-1 text-slate-600 hover:bg-slate-100 rounded-full transition">
+            <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+          </button>
+          <span class="absolute top-0 right-0 bg-blue-600 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold">3</span>
+        </div>
+
+        <button class="p-1 text-slate-600 hover:bg-slate-100 rounded-full transition">
+          <i data-lucide="search" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Farm Selector -->
+      <div class="flex items-center gap-1">
+        <button class="flex items-center gap-1 px-2.5 py-0.5 bg-slate-100 hover:bg-slate-200 transition rounded-full text-[10px] font-semibold text-slate-700">
+          <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>
+          <span>مزرعة النخيل</span>
+          <i data-lucide="calendar" class="w-3 h-3 text-slate-400"></i>
+        </button>
+        <button class="w-6 h-6 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition shadow-none">
+          <i data-lucide="plus" class="w-3 h-3"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="p-2.5 space-y-2 flex-1">
+
+      <!-- Hero Header Card with Farm Badge -->
+      <section class="rounded-xl bg-gradient-to-l from-blue-700 via-blue-600 to-indigo-800 text-white p-3 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-1.5">
+          <!-- Farm Emblem -->
+          <div class="w-9 h-9 rounded-full bg-white/10 p-0.5 border border-white/20 flex items-center justify-center shadow-inner">
+            <svg viewBox="0 0 64 64" fill="none" class="w-full h-full">
+              <circle cx="32" cy="32" r="28" fill="#f8fafc" />
+              <!-- Palm Tree Graphic -->
+              <path d="M32 54V24" stroke="#854d0e" stroke-width="4" stroke-linecap="round"/>
+              <path d="M32 24C32 24 22 10 8 16C8 28 22 30 32 30" fill="#15803d" stroke="#166534" stroke-width="2"/>
+              <path d="M32 24C32 24 42 10 56 16C56 28 42 30 32 30" fill="#15803d" stroke="#166534" stroke-width="2"/>
+              <path d="M32 20C32 20 20 6 14 20C22 24 30 22 32 22" fill="#22c55e" stroke="#166534" stroke-width="1.5"/>
+              <path d="M32 20C32 20 44 6 50 20C42 24 34 22 32 22" fill="#22c55e" stroke="#166534" stroke-width="1.5"/>
+              <!-- Dates Cluster -->
+              <circle cx="30" cy="27" r="2.5" fill="#a16207"/>
+              <circle cx="34" cy="27" r="2.5" fill="#a16207"/>
+              <circle cx="32" cy="30" r="2" fill="#78350f"/>
+            </svg>
+          </div>
+
+          <span class="text-[9px] bg-white/10 px-2 py-0.5 rounded-full font-medium flex items-center gap-1 border border-white/15">
+            <i data-lucide="trending-up" class="w-2.5 h-2.5"></i> عام 2025
+          </span>
+        </div>
+
+        <div class="mb-2 text-right">
+          <h1 class="text-base font-bold leading-tight">لوحة التحكم</h1>
+          <p class="text-[9px] text-blue-100">أداء الميزانية المالي في لمحة واحدة</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-1.5">
+          <div class="bg-white/10 backdrop-blur-sm rounded-lg p-1.5 px-2 border border-white/10 flex items-center justify-between">
+            <div class="w-6 h-6 rounded-md bg-white/15 flex items-center justify-center shrink-0">
+              <i data-lucide="wallet" class="w-3 h-3 text-white"></i>
+            </div>
+            <div class="text-left">
+              <span class="text-[8px] text-blue-100 block leading-none">صافي الربح</span>
+              <span class="font-bold text-[11px] font-mono">87,000 <span class="text-[8px] font-normal font-sans">ج.م</span></span>
+            </div>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-sm rounded-lg p-1.5 px-2 border border-white/10 flex items-center justify-between">
+            <div class="w-6 h-6 rounded-md bg-white/15 flex items-center justify-center shrink-0">
+              <i data-lucide="pie-chart" class="w-3 h-3 text-white"></i>
+            </div>
+            <div class="text-left">
+              <span class="text-[8px] text-blue-100 block leading-none">الموازنة غير المصروفة</span>
+              <span class="font-bold text-[11px] font-mono">0 <span class="text-[8px] font-normal font-sans">ج.م</span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPI Cards 2x2 -->
+      <section class="grid grid-cols-2 gap-1.5">
+        <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded flex items-center gap-0.5">
+              <i data-lucide="arrow-up-right" class="w-2.5 h-2.5"></i> 15%
+            </span>
+            <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <i data-lucide="trending-up" class="w-3 h-3"></i>
+            </div>
+          </div>
+          <span class="text-[9px] text-slate-500 block leading-tight">إجمالي الإيرادات</span>
+          <span class="text-[11px] font-bold text-slate-900 font-mono">142,000 <span class="text-[8px] font-normal font-sans text-slate-400">ج.م</span></span>
+        </div>
+
+        <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1 py-0.2 rounded flex items-center gap-0.5">
+              <i data-lucide="arrow-down-right" class="w-2.5 h-2.5"></i> 8%
+            </span>
+            <div class="w-5 h-5 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">
+              <i data-lucide="trending-down" class="w-3 h-3"></i>
+            </div>
+          </div>
+          <span class="text-[9px] text-slate-500 block leading-tight">إجمالي المصروفات</span>
+          <span class="text-[11px] font-bold text-slate-900 font-mono">239,000 <span class="text-[8px] font-normal font-sans text-slate-400">ج.م</span></span>
+        </div>
+
+        <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1 py-0.2 rounded flex items-center gap-0.5">
+              <i data-lucide="arrow-down-right" class="w-2.5 h-2.5"></i> 25%
+            </span>
+            <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center">
+              <i data-lucide="wallet" class="w-3 h-3"></i>
+            </div>
+          </div>
+          <span class="text-[9px] text-slate-500 block leading-tight">صافي الربح</span>
+          <span class="text-[11px] font-bold text-slate-900 font-mono">87,000 <span class="text-[8px] font-normal font-sans text-slate-400">ج.م</span></span>
+        </div>
+
+        <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded flex items-center gap-0.5">
+              <i data-lucide="arrow-up-right" class="w-2.5 h-2.5"></i> 3%
+            </span>
+            <div class="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+              <i data-lucide="users" class="w-3 h-3"></i>
+            </div>
+          </div>
+          <span class="text-[9px] text-slate-500 block leading-tight">عدد العملاء</span>
+          <span class="text-[11px] font-bold text-slate-900 font-mono">3 <span class="text-[8px] font-normal font-sans text-slate-400">عملاء</span></span>
+        </div>
+      </section>
+
+      <!-- Charts Row -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+        <!-- Monthly Performance Area Chart -->
+        <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 class="text-[10px] font-bold text-slate-800 leading-tight">الأداء المالي الشهري</h2>
+            <p class="text-[8px] text-slate-400">الإيرادات مقابل المصروفات</p>
+          </div>
+          
+          <div class="h-24 w-full mt-0.5 relative">
+            <svg viewBox="0 0 280 110" class="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25" />
+                  <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0" />
+                </linearGradient>
+                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.3" />
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              <!-- Grid -->
+              <line x1="28" y1="15" x2="270" y2="15" stroke="#f1f5f9" stroke-dasharray="2" />
+              <line x1="28" y1="45" x2="270" y2="45" stroke="#f1f5f9" stroke-dasharray="2" />
+              <line x1="28" y1="75" x2="270" y2="75" stroke="#f1f5f9" stroke-dasharray="2" />
+              <line x1="28" y1="95" x2="270" y2="95" stroke="#e2e8f0" />
+
+              <text x="24" y="18" font-size="7" fill="#94a3b8" text-anchor="end">240K</text>
+              <text x="24" y="48" font-size="7" fill="#94a3b8" text-anchor="end">180K</text>
+              <text x="24" y="78" font-size="7" fill="#94a3b8" text-anchor="end">60K</text>
+              <text x="24" y="97" font-size="7" fill="#94a3b8" text-anchor="end">0</text>
+
+              <!-- Expense Area & Curve -->
+              <path d="M 35 95 C 60 95, 90 92, 115 90 C 135 88, 145 15, 160 15 C 175 15, 185 88, 205 92 C 230 95, 250 95, 270 95 Z" fill="url(#expenseGrad)" />
+              <path d="M 35 95 C 60 95, 90 92, 115 90 C 135 88, 145 15, 160 15 C 175 15, 185 88, 205 92 C 230 95, 250 95, 270 95" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />
+
+              <!-- Revenue Area & Curve -->
+              <path d="M 35 95 C 60 95, 90 90, 115 88 C 135 85, 145 42, 160 42 C 175 42, 185 85, 205 90 C 230 95, 250 95, 270 95 Z" fill="url(#revenueGrad)" />
+              <path d="M 35 95 C 60 95, 90 90, 115 88 C 135 85, 145 42, 160 42 C 175 42, 185 85, 205 90 C 230 95, 250 95, 270 95" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" />
+
+              <circle cx="160" cy="15" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+              <circle cx="160" cy="42" r="2.5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
+            </svg>
+          </div>
+
+          <div class="flex justify-between px-3 text-[8px] text-slate-400 mt-0.5">
+            <span>يناير</span>
+            <span>مارس</span>
+            <span>أبريل</span>
+            <span>مايو</span>
+            <span>يونيو</span>
+          </div>
+
+          <div class="flex items-center justify-center gap-2.5 mt-1 pt-1 border-t border-slate-50 text-[9px] text-slate-500">
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> المصروفات
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> الإيرادات
+            </span>
+          </div>
+        </div>
+
+        <!-- Donut Breakdown -->
+        <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 class="text-[10px] font-bold text-slate-800 leading-tight">توزيع المصروفات</h2>
+            <p class="text-[8px] text-slate-400">حسب الفئة</p>
+          </div>
+
+          <div class="flex justify-center my-0.5 relative">
+            <svg viewBox="0 0 100 100" class="w-16 h-16 -rotate-90">
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" stroke-width="13" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#2563eb" stroke-width="13" stroke-dasharray="95.5 238.7" stroke-dashoffset="0" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#8b5cf6" stroke-width="13" stroke-dasharray="59.7 238.7" stroke-dashoffset="-95.5" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#10b981" stroke-width="13" stroke-dasharray="47.7 238.7" stroke-dashoffset="-155.2" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" stroke-width="13" stroke-dasharray="35.8 238.7" stroke-dashoffset="-202.9" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-[9px] font-bold text-slate-800 leading-tight font-mono">239,000</span>
+              <span class="text-[7px] text-slate-400 leading-none">ج.م</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-x-1 gap-y-0.5 text-[8px] text-slate-600">
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span> التشغيل
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span> أخرى 15%
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0"></span> التسويق
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span> إيجارات 20%
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Alert -->
+      <div class="p-2 bg-amber-50 border border-amber-200/80 rounded-lg flex items-center justify-between">
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-amber-900 block leading-tight">تنبيهات</span>
+          <p class="text-[9px] text-amber-700 leading-tight">تجاوزت المصروفات الحد المحدد لهذا الشهر</p>
+        </div>
+        <div class="w-6 h-6 rounded-md bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+          <i data-lucide="bell" class="w-3 h-3"></i>
+        </div>
+      </div>
+
+      <!-- Transactions -->
+      <section class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm space-y-1">
+        <div class="flex items-center justify-between mb-0.5">
+          <a href="#" class="text-[9px] font-semibold text-blue-600 flex items-center gap-0.5">
+            <i data-lucide="chevron-left" class="w-2.5 h-2.5"></i> عرض الكل
+          </a>
+          <h2 class="text-[10px] font-bold text-slate-800 leading-tight">آخر المعاملات</h2>
+        </div>
+
+        <div class="divide-y divide-slate-50">
+          <div class="flex items-center justify-between py-1">
+            <span class="text-[10px] font-bold text-emerald-600 font-mono">+12,000 ج.م</span>
+            <div class="flex items-center gap-1.5">
+              <div class="text-right">
+                <span class="text-[10px] font-bold text-slate-800 block leading-tight">بيع نقدي</span>
+                <span class="text-[8px] text-slate-400 font-mono">27-06-2025</span>
+              </div>
+              <div class="w-5 h-5 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between py-1">
+            <span class="text-[10px] font-bold text-emerald-600 font-mono">+12,000 ج.م</span>
+            <div class="flex items-center gap-1.5">
+              <div class="text-right">
+                <span class="text-[10px] font-bold text-slate-800 block leading-tight">بيع نقدي</span>
+                <span class="text-[8px] text-slate-400 font-mono">22-06-2025</span>
+              </div>
+              <div class="w-5 h-5 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between py-1">
+            <span class="text-[10px] font-bold text-rose-600 font-mono">-80,000 ج.م</span>
+            <div class="flex items-center gap-1.5">
+              <div class="text-right">
+                <span class="text-[10px] font-bold text-slate-800 block leading-tight">مشتريات</span>
+                <span class="text-[8px] text-slate-400 font-mono">22-06-2025</span>
+              </div>
+              <div class="w-5 h-5 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center">
+                <i data-lucide="arrow-down-right" class="w-3 h-3"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between py-1">
+            <span class="text-[10px] font-bold text-rose-600 font-mono">-14,000 ج.م</span>
+            <div class="flex items-center gap-1.5">
+              <div class="text-right">
+                <span class="text-[10px] font-bold text-slate-800 block leading-tight">مصاريف</span>
+                <span class="text-[8px] text-slate-400 font-mono">22-06-2025</span>
+              </div>
+              <div class="w-5 h-5 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center">
+                <i data-lucide="arrow-down-right" class="w-3 h-3"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Partners -->
+      <section class="p-2 bg-blue-50/50 border border-blue-100 rounded-lg flex items-center justify-between">
+        <span class="text-[9px] text-slate-400">لا يوجد شركاء بعد</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] font-bold text-slate-800">نظرة عامة على الشركاء</span>
+          <div class="w-5 h-5 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center">
+            <i data-lucide="users" class="w-3 h-3"></i>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-sm border-t border-slate-200 px-3 py-1 flex items-center justify-around z-40 shadow-lg">
+      <button class="flex flex-col items-center text-slate-400 hover:text-blue-600">
+        <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+        <span class="text-[8px]">التقارير</span>
+      </button>
+
+      <button class="flex flex-col items-center text-slate-400 hover:text-blue-600">
+        <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+        <span class="text-[8px]">المعاملات</span>
+      </button>
+
+      <div class="-mt-4">
+        <button class="w-9 h-9 bg-blue-600 text-white rounded-full shadow-md shadow-blue-500/30 flex items-center justify-center hover:bg-blue-700 transition">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <button class="flex flex-col items-center text-slate-400 hover:text-blue-600">
+        <i data-lucide="users" class="w-3.5 h-3.5"></i>
+        <span class="text-[8px]">العملاء</span>
+      </button>
+
+      <button class="flex flex-col items-center text-slate-400 hover:text-blue-600">
+        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+        <span class="text-[8px]">الإعدادات</span>
+      </button>
+    </nav>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

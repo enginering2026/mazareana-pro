@@ -1,0 +1,64 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# APK & keystore
+*.apk
+*.jks
+*.keystore
+
+# Android & Capacitor build artifacts — كلها ignore
+android/app/build/
+android/.gradle/
+android/gradle/
+android/app/src/main/res/drawable-land-*/
+android/app/src/main/res/drawable-port-*/
+android/app/src/main/res/drawable-xxxhdpi/
+android/app/src/main/res/drawable-xxhdpi/
+android/app/src/main/res/drawable-xhdpi/
+android/app/src/main/res/drawable-hdpi/
+android/app/src/main/res/drawable-mdpi/
+
+# Flock Android
+flock-android/
+keygen-android/
+
+# v8 extracted old build
+v8_extracted/
+
+# Large splash images
+*.png
+!public/*.png
+!icons/*.png
+
+# Screenshots
+/current_screen.png
+/new_screenshot.png
+/tablet_check*.png
+/wsa_screen.png

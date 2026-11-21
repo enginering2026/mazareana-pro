@@ -1,0 +1,165 @@
+{
+  "local_farms": [
+    {
+      "id": "farm-demo",
+      "name": "مزرعة الهدى النموذجية للدواجن",
+      "type": "دواجن",
+      "location": "القاهرة",
+      "description": "مزرعة تجريبية لتربية وتسمين الدواجن وإنتاج البيض",
+      "createdAt": "2026-06-01"
+    }
+  ],
+  "local_clients": [
+    {
+      "id": "cli-demo-1",
+      "farmId": "farm-demo",
+      "name": "شركة النماء للأعلاف",
+      "type": "مورد",
+      "phone": "01012345678",
+      "email": "info@namaa-feed.com",
+      "notes": "المورد الرئيسي لعلف التسمين والبادئ",
+      "invoices": 0,
+      "totalAmount": 0
+    },
+    {
+      "id": "cli-demo-2",
+      "farmId": "farm-demo",
+      "name": "محل الفجر للطيور والدواجن",
+      "type": "عميل",
+      "phone": "01234567890",
+      "email": "fajr-poultry@email.com",
+      "notes": "عميل تجزئة رئيسي لشراء الدجاج الحي والبيض",
+      "invoices": 1,
+      "totalAmount": 25000
+    }
+  ],
+  "local_revenues": [
+    {
+      "id": "rev-demo-1",
+      "farmId": "farm-demo",
+      "type": "بيض",
+      "amount": 15000,
+      "date": "2026-06-05",
+      "notes": "بيع 100 طبق بيض أحمر",
+      "quantity": 100,
+      "unitPrice": 150,
+      "clientId": "cli-demo-2",
+      "paymentMethod": "cash"
+    },
+    {
+      "id": "rev-demo-2",
+      "farmId": "farm-demo",
+      "type": "فراخ",
+      "amount": 25000,
+      "date": "2026-06-10",
+      "notes": "بيع 250 كجم فراخ تسمين",
+      "quantity": 250,
+      "unitPrice": 100,
+      "clientId": "cli-demo-2",
+      "paymentMethod": "credit"
+    }
+  ],
+  "local_expenses": [
+    {
+      "id": "exp-demo-1",
+      "farmId": "farm-demo",
+      "category": "علف",
+      "amount": 12000,
+      "date": "2026-06-02",
+      "description": "شراء طن علف بادئ 23%",
+      "quantity": 1,
+      "unitPrice": 12000,
+      "paymentMethod": "cash",
+      "paidAmount": 12000,
+      "supplierName": "شركة النماء للأعلاف",
+      "clientId": "cli-demo-1"
+    },
+    {
+      "id": "exp-demo-2",
+      "farmId": "farm-demo",
+      "category": "كهرباء",
+      "amount": 1500,
+      "date": "2026-06-08",
+      "description": "فاتورة كهرباء العنبر رقم 1",
+      "quantity": null,
+      "unitPrice": null,
+      "paymentMethod": "cash",
+      "paidAmount": 1500,
+      "supplierName": "شركة الكهرباء",
+      "clientId": null
+    },
+    {
+      "id": "exp-demo-3",
+      "farmId": "farm-demo",
+      "category": "عمالة",
+      "amount": 4000,
+      "date": "2026-06-15",
+      "description": "راتب العامل أحمد لشهر يونيو",
+      "quantity": null,
+      "unitPrice": null,
+      "paymentMethod": "cash",
+      "paidAmount": 4000,
+      "supplierName": "أحمد (عامل العنبر)",
+      "clientId": null
+    }
+  ],
+  "local_invoices": [
+    {
+      "id": "inv-demo-1",
+      "farmId": "farm-demo",
+      "number": "INV-001",
+      "clientName": "محل الفجر للطيور والدواجن",
+      "type": "فراخ",
+      "date": "2026-06-10",
+      "paymentMethod": "آجل",
+      "totalAmount": 25000,
+      "status": "غير مسدد",
+      "items": [
+        {
+          "type": "فراخ",
+          "quantity": 250,
+          "unitPrice": 100,
+          "total": 25000
+        }
+      ]
+    }
+  ],
+  "local_partners": [
+    {
+      "id": "part-demo-1",
+      "farmId": "farm-demo",
+      "name": "أبو أحمد الشريك المستثمر",
+      "phone": "01000000000",
+      "address": "الجيزة",
+      "partnershipPercentage": 50,
+      "openingBalance": 100000,
+      "createdAt": "2026-06-01"
+    }
+  ],
+  "local_payments": [
+    {
+      "id": "pay-demo-1",
+      "farmId": "farm-demo",
+      "clientId": "cli-demo-2",
+      "amount": 10000,
+      "date": "2026-06-12",
+      "notes": "دفعة تحت الحساب للفاتورة رقم 1"
+    }
+  ],
+  "local_expense_payments": [
+    {
+      "id": "exppay-demo-1",
+      "farmId": "farm-demo",
+      "expenseId": "exp-demo-1",
+      "clientId": "cli-demo-1",
+      "amount": 12000,
+      "date": "2026-06-02",
+      "notes": "دفعة مقدمة عند تسجيل المصروف"
+    }
+  ],
+  "backup_meta": {
+    "version": "1.0.0",
+    "date": "2026-06-20T00:00:00.000Z",
+    "farmCount": 1
+  }
+}

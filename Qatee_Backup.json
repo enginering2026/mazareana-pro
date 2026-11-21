@@ -1,0 +1,236 @@
+{
+  "setupDone": true,
+  "currentFarm": 0,
+  "feedAlertThreshold": 10,
+  "farms": [
+    {
+      "id": 1731600000000,
+      "name": "مزرعة النور والبركة",
+      "count": 10000,
+      "alive": 9975,
+      "type": "بياض",
+      "startDate": "2026-10-16",
+      "cycleNum": 1,
+      "feedStock": 45,
+      "feedAlertThreshold": 10,
+      "totalFeedConsumed": 4500,
+      "totalWeight": 0,
+      "eggSold": 120,
+      "totalMort": 25,
+      "feedRecords": [
+        {
+          "date": "2026-11-09",
+          "type": "بادي 23%",
+          "qty": 20,
+          "note": "صباحي",
+          "id": 101
+        },
+        {
+          "date": "2026-11-11",
+          "type": "نامي 21%",
+          "qty": 25,
+          "note": "مسائي",
+          "id": 102
+        },
+        {
+          "date": "2026-11-13",
+          "type": "بياض 18%",
+          "qty": 22,
+          "note": "خلط",
+          "id": 103
+        },
+        {
+          "date": "2026-11-15",
+          "type": "بياض 18%",
+          "qty": 23,
+          "note": "استهلاك اليوم",
+          "id": 104
+        }
+      ],
+      "feedStockRecords": [
+        {
+          "date": "2026-11-05",
+          "type": "بياض 18%",
+          "qty": 100,
+          "supplier": "شركة الأمل للأعلاف",
+          "price": 650,
+          "id": 201
+        }
+      ],
+      "eggRecords": [
+        {
+          "date": "2026-11-09",
+          "total": 240,
+          "broken": 2,
+          "isSale": false,
+          "note": "إنتاج ممتاز",
+          "id": 301
+        },
+        {
+          "date": "2026-11-10",
+          "total": 250,
+          "broken": 1,
+          "isSale": false,
+          "note": "",
+          "id": 302
+        },
+        {
+          "date": "2026-11-11",
+          "total": 255,
+          "broken": 3,
+          "isSale": false,
+          "note": "",
+          "id": 303
+        },
+        {
+          "date": "2026-11-12",
+          "total": 260,
+          "broken": 2,
+          "isSale": false,
+          "note": "",
+          "id": 304
+        },
+        {
+          "date": "2026-11-13",
+          "total": 265,
+          "broken": 1,
+          "isSale": false,
+          "note": "",
+          "id": 305
+        },
+        {
+          "date": "2026-11-14",
+          "total": 270,
+          "broken": 2,
+          "isSale": false,
+          "note": "",
+          "id": 306
+        },
+        {
+          "date": "2026-11-15",
+          "total": 275,
+          "broken": 2,
+          "isSale": false,
+          "note": "إنتاج اليوم",
+          "id": 307
+        },
+        {
+          "date": "2026-11-15",
+          "total": 120,
+          "isSale": true,
+          "buyer": "تاجر الجملة الحاج سعيد",
+          "pricePerPlate": 155,
+          "id": 308
+        }
+      ],
+      "mortRecords": [
+        {
+          "date": "2026-11-10",
+          "count": 5,
+          "cause": "طبيعي",
+          "note": "",
+          "id": 401
+        },
+        {
+          "date": "2026-11-12",
+          "count": 8,
+          "cause": "إجهاد حراري",
+          "note": "",
+          "id": 402
+        },
+        {
+          "date": "2026-11-15",
+          "count": 3,
+          "cause": "طبيعي",
+          "note": "",
+          "id": 403
+        }
+      ],
+      "medRecords": [
+        {
+          "date": "2026-11-08",
+          "type": "تحصين",
+          "name": "تحصين كولون 79",
+          "dose": "1 سم/لتر",
+          "method": "ماء الشرب",
+          "days": 1,
+          "withdraw": 0,
+          "note": "تحصين وقائي",
+          "id": 501
+        },
+        {
+          "date": "2026-11-15",
+          "type": "فيتامين",
+          "name": "أ د 3 هـ + هـ سلينيوم",
+          "dose": "0.5 سم/لتر",
+          "method": "ماء الشرب",
+          "days": 3,
+          "withdraw": 0,
+          "note": "منشط إنتاج",
+          "id": 502
+        }
+      ],
+      "medStock": [
+        {
+          "name": "تحصين كولون 79",
+          "qty": 5,
+          "unit": "فيال",
+          "expDate": "2027-06-01",
+          "note": "ثلاجة 4 درجات",
+          "id": 601
+        },
+        {
+          "name": "فيتامين أ د 3 هـ",
+          "qty": 10,
+          "unit": "لتر",
+          "expDate": "2027-12-01",
+          "note": "مخزن الأدوية",
+          "id": 602
+        }
+      ],
+      "vaccineSchedule": [
+        {
+          "day": 1,
+          "name": "ماريك + هتشنر B1",
+          "type": "فيروسي",
+          "method": "رش / تقطير",
+          "note": "يوم الاستلام",
+          "id": 701
+        },
+        {
+          "day": 7,
+          "name": "جمبورو عترة متوسطة",
+          "type": "فيروسي",
+          "method": "ماء الشرب",
+          "note": "تعطيش ساعتين",
+          "id": 702
+        },
+        {
+          "day": 14,
+          "name": "جمبورو ثانية (منشطة)",
+          "type": "فيروسي",
+          "method": "ماء الشرب",
+          "note": "",
+          "id": 703
+        },
+        {
+          "day": 18,
+          "name": "لاسوتا نيوكاسل + كولون",
+          "type": "فيروسي",
+          "method": "تقطير بالعين",
+          "note": "",
+          "id": 704
+        },
+        {
+          "day": 28,
+          "name": "أنفلونزا H9N2 مثبط",
+          "type": "بكتيري/مثبط",
+          "method": "حقن تحت الجلد",
+          "note": "نصف سم للطائر",
+          "id": 705
+        }
+      ],
+      "cycleArchive": []
+    }
+  ]
+}
