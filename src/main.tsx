@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
 import '@fontsource/space-grotesk/500.css'
 import '@fontsource/space-grotesk/700.css'
@@ -13,7 +13,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
+      <HashRouter>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
             <AppProvider>
@@ -21,7 +21,7 @@ createRoot(document.getElementById('root')!).render(
             </AppProvider>
           </AuthProvider>
         </ThemeProvider>
-      </BrowserRouter>
+      </HashRouter>
     </ErrorBoundary>
   </StrictMode>,
 )
