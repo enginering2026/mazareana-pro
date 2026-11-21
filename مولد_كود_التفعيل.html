@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang=ar dir=rtl>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset=UTF-8>
-  <meta name=viewport content=width=device-width, initial-scale=1.0>
-  <title>مولد كود التفعيل | Mazareana Pro</title>
-  <link rel=preconnect href=https://fonts.googleapis.com>
-  <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
-  <link href=https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap rel=stylesheet>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مولد كود التفعيل المطور | Mazareana Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #10b981;
       --primary-hover: #059669;
       --primary-glow: rgba(16, 185, 129, 0.35);
       --bg-dark: #090d16;
-      --card-bg: rgba(17, 24, 39, 0.75);
-      --border: rgba(255, 255, 255, 0.1);
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --border: rgba(255, 255, 255, 0.12);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -34,41 +34,6 @@
       justify-content: center;
       color: var(--text-main);
       padding: 20px;
-      overflow-x: hidden;
-    }
-
-    .background-blobs {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.25;
-    }
-
-    .blob-1 {
-      width: 400px;
-      height: 400px;
-      background: #10b981;
-      top: 10%;
-      right: 15%;
-    }
-
-    .blob-2 {
-      width: 350px;
-      height: 350px;
-      background: #6366f1;
-      bottom: 15%;
-      left: 10%;
     }
 
     .card {
@@ -79,96 +44,99 @@
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 36px 32px;
+      padding: 32px 28px;
       width: 100%;
-      max-width: 460px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.08);
-      animation: fadeIn 0.4s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+      max-width: 500px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.1);
     }
 
     .header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #34d399;
-      padding: 4px 14px;
-      border-radius: 9999px;
-      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 13px;
       font-weight: 700;
-      margin-bottom: 14px;
+      color: #34d399;
+      margin-bottom: 12px;
     }
 
     h1 {
       font-size: 24px;
-      font-weight: 800;
-      color: #fff;
+      font-weight: 900;
       margin-bottom: 6px;
     }
 
-    p.subtitle {
+    .subtitle {
+      font-size: 13px;
       color: var(--text-muted);
-      font-size: 13.5px;
-      line-height: 1.5;
     }
 
     .form-group {
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     label {
       display: block;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 700;
       margin-bottom: 8px;
+      color: #cbd5e1;
     }
 
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    input {
+    input, select {
       width: 100%;
-      background: rgba(10, 15, 30, 0.7);
-      border: 1.5px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 18px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 16px;
       font-weight: 700;
       color: #fff;
-      letter-spacing: 2px;
-      text-align: center;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'JetBrains Mono', 'Cairo', monospace;
       outline: none;
       transition: all 0.25s ease;
+      text-align: center;
     }
 
-    input:focus {
+    input:focus, select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 4px var(--primary-glow);
-      background: rgba(10, 15, 30, 0.95);
+      background: rgba(15, 23, 42, 0.95);
     }
 
-    input::placeholder {
-      font-family: 'Cairo', sans-serif;
-      font-size: 14px;
-      letter-spacing: normal;
-      color: #475569;
-      font-weight: 500;
+    .plans-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .plan-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .plan-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+      color: #34d399;
     }
 
     .btn-generate {
@@ -177,7 +145,7 @@
       color: #fff;
       border: none;
       border-radius: 14px;
-      padding: 15px;
+      padding: 14px;
       font-size: 16px;
       font-weight: 800;
       cursor: pointer;
@@ -187,64 +155,58 @@
       gap: 10px;
       box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
       transition: all 0.2s ease;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .btn-generate:hover {
       transform: translateY(-2px);
       box-shadow: 0 14px 30px -5px rgba(16, 185, 129, 0.55);
-      background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-    }
-
-    .btn-generate:active {
-      transform: translateY(0);
     }
 
     .result-box {
-      background: rgba(6, 95, 70, 0.15);
-      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      background: rgba(6, 95, 70, 0.18);
+      border: 1.5px solid rgba(16, 185, 129, 0.4);
       border-radius: 18px;
       padding: 18px;
       text-align: center;
       display: none;
-      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      margin-bottom: 18px;
     }
 
     .result-label {
       font-size: 12px;
       font-weight: 700;
       color: #6ee7b7;
-      text-transform: uppercase;
       margin-bottom: 6px;
     }
 
     .result-key {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 900;
       color: #10b981;
-      letter-spacing: 4px;
-      text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      letter-spacing: 3px;
+      margin-bottom: 10px;
       user-select: all;
+    }
+
+    .backup-code {
+      font-size: 12px;
+      color: #94a3b8;
       margin-bottom: 12px;
     }
 
     .btn-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn-action {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
-      padding: 10px 14px;
+      padding: 9px 12px;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 700;
@@ -257,23 +219,17 @@
     }
 
     .btn-action:hover {
-      background: rgba(255, 255, 255, 0.14);
-      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .btn-whatsapp {
-      background: rgba(37, 211, 102, 0.15);
-      border-color: rgba(37, 211, 102, 0.35);
+      background: rgba(37, 211, 102, 0.18);
+      border-color: rgba(37, 211, 102, 0.4);
       color: #4ade80;
     }
 
-    .btn-whatsapp:hover {
-      background: rgba(37, 211, 102, 0.25);
-    }
-
     .master-key-box {
-      margin-top: 20px;
-      padding-top: 18px;
+      padding-top: 14px;
       border-top: 1px dashed rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
@@ -285,7 +241,7 @@
     .master-code {
       font-family: 'JetBrains Mono', monospace;
       color: #a5b4fc;
-      background: rgba(99, 102, 241, 0.15);
+      background: rgba(99, 102, 241, 0.18);
       padding: 3px 8px;
       border-radius: 6px;
       font-weight: 700;
@@ -317,43 +273,43 @@
 </head>
 <body>
 
-  <div class="background-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-  </div>
-
   <div class="card">
     <div class="header">
       <div class="badge">
         <span>🛡️</span>
-        <span>Mazareana Pro Generator</span>
+        <span>Mazareana Pro License Generator v2.0</span>
       </div>
-      <h1>مولد كود تفعيل التطبيق</h1>
-      <p class="subtitle">أدخل رمز جهاز العميل المكون من 6 أرقام لتوليد كود التفعيل الخاص به فوراً</p>
+      <h1>مولد كود التفعيل المطور</h1>
+      <p class="subtitle">يدعم جميع معرّفات الأجهزة (MZ-XXXX أو أرقام فقط)</p>
     </div>
 
     <div class="form-group">
-      <label for="deviceId">رمز الجهاز (Device ID)</label>
-      <div class="input-wrapper">
-        <input 
-          type="text" 
-          id="deviceId" 
-          placeholder="مثال: 684251" 
-          maxlength="10" 
-          autocomplete="off"
-          autofocus
-        >
-      </div>
+      <label for="deviceId">معرّف الجهاز (Hardware ID)</label>
+      <input 
+        type="text" 
+        id="deviceId" 
+        placeholder="مثال: MZ-8979-A5FD-2B1A أو 684251" 
+        autocomplete="off"
+        autofocus
+      >
+    </div>
+
+    <label>نوع الباقة</label>
+    <div class="plans-grid">
+      <button class="plan-btn active" data-plan="lifetime" onclick="selectPlan('lifetime')">مدى الحياة ♾️</button>
+      <button class="plan-btn" data-plan="yearly" onclick="selectPlan('yearly')">سنوي (سنة) 📅</button>
+      <button class="plan-btn" data-plan="monthly" onclick="selectPlan('monthly')">شهري (30 يوم) ⏳</button>
     </div>
 
     <button class="btn-generate" onclick="generateKey()">
       <span>⚡</span>
-      <span>توليد كود التفعيل</span>
+      <span>توليد كود التفعيل فوراً</span>
     </button>
 
     <div id="resultBox" class="result-box">
-      <div class="result-label">كود التفعيل الخاص بالجهاز:</div>
+      <div class="result-label">كود التفعيل المشفر المعتمد:</div>
       <div id="generatedKey" class="result-key">------</div>
+      <div id="backupCode" class="backup-code"></div>
       
       <div class="btn-group">
         <button class="btn-action" onclick="copyKey()">
@@ -369,89 +325,162 @@
 
     <div class="master-key-box">
       <span>الكود الرئيسي الدائم (Master Key):</span>
-      <span class="master-code" title="اضغط للنسخ" onclick="copyText('MashrouaMalia2026', 'تم نسخ الكود الرئيسي!')">MashrouaMalia2026</span>
+      <span class="master-code" title="اضغط للنسخ" onclick="copyText('MashrouaMalia2026', 'تم نسخ كود الماستر!')">MashrouaMalia2026</span>
     </div>
   </div>
 
-  <div id="toast" class="toast">تم النسخ إلى الحافظة بنجاح!</div>
+  <div id="toast" class="toast">تم النسخ بنجاح!</div>
 
   <script>
+    const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const SECRET_SALT = 0x5A3C9E71;
+    const REF_EPOCH = new Date('2026-01-01T00:00:00Z').getTime();
+
+    let selectedPlan = 'lifetime';
+
+    function selectPlan(plan) {
+      selectedPlan = plan;
+      document.querySelectorAll('.plan-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.plan === plan);
+      });
+      if (document.getElementById("deviceId").value.trim()) {
+        generateKey();
+      }
+    }
+
+    function hashPayload(devId, days, tier) {
+      let h = ((devId * 1664525) + (days * 1013904223) + (tier * 374761393) + SECRET_SALT) >>> 0;
+      h = (h ^ (h >>> 13)) >>> 0;
+      h = (Math.imul(h, 0x5bd1e995)) >>> 0;
+      h = (h ^ (h >>> 15)) >>> 0;
+      return h & 0x7FFFFF;
+    }
+
+    function scramble40(val, devId) {
+      let L = Number(val >> 20n) & 0xFFFFF;
+      let R = Number(val & 0xFFFFFn);
+      const key = ((devId ^ SECRET_SALT) >>> 0);
+      for (let round = 0; round < 4; round++) {
+        const f = ((R * 65539 + key + round * 31) ^ (R >>> 7)) & 0xFFFFF;
+        const nextR = (L ^ f) & 0xFFFFF;
+        L = R;
+        R = nextR;
+      }
+      return (BigInt(L) << 20n) | BigInt(R);
+    }
+
+    function encodeLicense(devIdStr, tier) {
+      const numDev = parseInt(String(devIdStr).replace(/\D/g, ''), 10) || 0;
+      let days = 0x7FFF;
+      const tierNum = tier === 'monthly' ? 0 : tier === 'yearly' ? 1 : 2;
+      const prefix = tier === 'monthly' ? 'M' : tier === 'yearly' ? 'Y' : 'L';
+
+      if (tier === 'monthly') {
+        const expTime = Date.now() + 30 * 86400000;
+        days = Math.max(0, Math.floor((expTime - REF_EPOCH) / 86400000)) & 0x7FFF;
+      } else if (tier === 'yearly') {
+        const expTime = Date.now() + 365 * 86400000;
+        days = Math.max(0, Math.floor((expTime - REF_EPOCH) / 86400000)) & 0x7FFF;
+      }
+
+      const checksum = hashPayload(numDev, days, tierNum);
+      const raw = (BigInt(checksum) << 17n) | (BigInt(days) << 2n) | BigInt(tierNum);
+      const scrambled = scramble40(raw, numDev);
+
+      let chars = '';
+      let temp = scrambled;
+      for (let i = 0; i < 8; i++) {
+        const idx = Number(temp & 0x1Fn);
+        chars = ALPHABET[idx] + chars;
+        temp = temp >> 5n;
+      }
+
+      return prefix + '-' + chars.slice(0, 4) + '-' + chars.slice(4, 8);
+    }
+
+    function calculateLegacy(devIdStr, tier) {
+      const numericDevId = parseInt(String(devIdStr).replace(/\D/g, ''), 10);
+      if (isNaN(numericDevId)) return null;
+      if (tier === 'monthly') {
+        return (((numericDevId * 7) + 314159) % 1000000).toString().padStart(6, '0');
+      } else if (tier === 'yearly') {
+        return (((numericDevId * 5) + 654321) % 1000000).toString().padStart(6, '0');
+      } else {
+        return (((numericDevId * 3) + 123456) % 1000000).toString().padStart(6, '0');
+      }
+    }
+
     const deviceIdInput = document.getElementById("deviceId");
     const resultBox = document.getElementById("resultBox");
     const generatedKeyEl = document.getElementById("generatedKey");
+    const backupCodeEl = document.getElementById("backupCode");
     const toast = document.getElementById("toast");
 
-    // Realtime formatting & Enter key trigger
     deviceIdInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        generateKey();
-      }
+      if (e.key === "Enter") generateKey();
     });
 
     deviceIdInput.addEventListener("input", () => {
-      // Allow only numbers
-      deviceIdInput.value = deviceIdInput.value.replace(/[^0-9]/g, '');
-      if (deviceIdInput.value.length >= 6) {
+      if (deviceIdInput.value.trim().length >= 6) {
         generateKey();
       }
     });
 
-    function calculateKey(devId) {
-      const numericDevId = parseInt(devId, 10);
-      if (isNaN(numericDevId)) return null;
-      // Formula: ((devId * 3) + 123456) % 1000000
-      const calculated = ((numericDevId * 3) + 123456) % 1000000;
-      return calculated.toString();
-    }
-
     function generateKey() {
-      const devId = deviceIdInput.value.trim();
+      const devId = deviceIdInput.value.trim().toUpperCase();
       if (!devId) {
-        showToast("يرجى كتابة رمز الجهاز أولاً", "#f43f5e", "#fff");
+        showToast("يرجى كتابة أو لصق رمز الجهاز أولاً", "#f43f5e", "#fff");
         deviceIdInput.focus();
         return;
       }
 
-      const key = calculateKey(devId);
-      if (key === null) {
-        showToast("رمز الجهاز يجب أن يكون أرقاماً فقط", "#f43f5e", "#fff");
-        return;
-      }
+      const key = encodeLicense(devId, selectedPlan);
+      const legacy = calculateLegacy(devId, selectedPlan);
 
       generatedKeyEl.textContent = key;
+      backupCodeEl.textContent = `الكود الرقمي البديل: ${legacy}`;
       resultBox.style.display = "block";
     }
 
     function copyKey() {
       const key = generatedKeyEl.textContent;
       if (!key || key === "------") return;
-      copyText(key, `تم نسخ كود التفعيل: ${key}`);
+      copyText(key, `تم نسخ الكود: ${key}`);
     }
 
     function shareWhatsApp() {
-      const devId = deviceIdInput.value.trim();
+      const devId = deviceIdInput.value.trim().toUpperCase();
       const key = generatedKeyEl.textContent;
+      const legacy = calculateLegacy(devId, selectedPlan);
       if (!key || key === "------") return;
 
+      const planName = selectedPlan === 'lifetime' ? 'مدى الحياة' : selectedPlan === 'yearly' ? 'سنوية' : 'شهرية';
       const message = encodeURIComponent(
-        `أهلاً بك!\nكود تفعيل تطبيق Mazareana Pro الخاص بجهازك (${devId}) هو:\n\n🔑 ${key}\n\nشكراً لاستخدامك التطبيق!`
+        `أهلاً بك!\nكود تفعيل تطبيق مزارعنا برو (${planName}) لجهازك (${devId}) هو:\n\n🔑 ${key}\n(أو الكود البديل: ${legacy})\n\nشكراً لثقتكم بنا! ✨`
       );
       window.open(`https://wa.me/?text=${message}`, "_blank");
     }
 
     function copyText(text, msg) {
-      if (window.AndroidApp && window.AndroidApp.copyToClipboard) {
-        window.AndroidApp.copyToClipboard(text);
-      }
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
           showToast(msg || "تم النسخ بنجاح!");
         }).catch(() => {
-          showToast(msg || "تم النسخ بنجاح!");
+          fallbackCopy(text, msg);
         });
       } else {
-        showToast(msg || "تم النسخ بنجاح!");
+        fallbackCopy(text, msg);
       }
+    }
+
+    function fallbackCopy(text, msg) {
+      const tempInput = document.createElement("input");
+      tempInput.value = text;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      showToast(msg || "تم النسخ بنجاح!");
     }
 
     function showToast(text, bg = "#10b981", color = "#064e3b") {
