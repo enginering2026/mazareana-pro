@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   TrendingUp,
   ShieldCheck,
@@ -11,1147 +11,813 @@ import {
   ChevronUp,
   Key,
   Download,
-  Share2,
   ExternalLink,
   MessageCircle,
-  HelpCircle,
-  Award,
   Layers,
-  ArrowRight,
+  ArrowLeft,
   Sparkles,
   DollarSign,
   BarChart3,
-  Calendar,
-  PhoneCall,
   Menu,
   X,
-  LayoutGrid
+  LayoutGrid,
+  Star,
+  Zap,
+  Lock,
+  Play,
 } from 'lucide-react';
 
 export const APK_DOWNLOAD_URL = 'https://www.mediafire.com/file/vsl077zreym4guk/MazareanaPro.apk/file';
 
+// ─── Hook: scroll-triggered reveal ───────────────────────────────────────────
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, inView };
+}
+
+// ─── Hook: animated counter ──────────────────────────────────────────────────
+function useCounter(target: number, duration = 1600, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number | null = null;
+    const step = (ts: number) => {
+      if (!startTime) startTime = ts;
+      const prog = Math.min((ts - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - prog, 3);
+      setCount(Math.floor(ease * target));
+      if (prog < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [start, target, duration]);
+  return count;
+}
+
+// ─── Animated Number Card ────────────────────────────────────────────────────
+function StatCard({ value, suffix, label, color, started }: { value: number; suffix: string; label: string; color: string; started: boolean }) {
+  const count = useCounter(value, 1800, started);
+  return (
+    <div className={`bg-slate-900/70 border border-slate-800 rounded-2xl p-5 text-center hover:border-${color}-500/50 transition-all duration-500`}>
+      <div className={`text-3xl font-black text-${color}-400`}>{count.toLocaleString()}{suffix}</div>
+      <div className="text-xs text-slate-400 font-bold mt-1">{label}</div>
+    </div>
+  );
+}
+
+// ─── Particle Orbs background ────────────────────────────────────────────────
+function GlowOrbs() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-blue-600/10 blur-[120px] animate-pulse" style={{animationDuration:'4s'}} />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] rounded-full bg-emerald-500/10 blur-[100px] animate-pulse" style={{animationDuration:'6s',animationDelay:'2s'}} />
+      <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] rounded-full bg-indigo-500/8 blur-[90px] animate-pulse" style={{animationDuration:'5s',animationDelay:'1s'}} />
+    </div>
+  );
+}
+
+// ─── Floating phone mock ─────────────────────────────────────────────────────
+function PhoneMockup({ src, className = '' }: { src: string; className?: string }) {
+  return (
+    <div className={`relative select-none ${className}`}>
+      <div className="relative w-[200px] sm:w-[220px] rounded-[32px] bg-slate-900 border-[3px] border-slate-700 shadow-2xl shadow-black/60 overflow-hidden">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-slate-800 rounded-full z-10" />
+        <img src={src} alt="app screen" className="w-full object-cover" />
+      </div>
+      <div className="absolute inset-0 rounded-[32px] ring-1 ring-white/5 pointer-events-none" />
+    </div>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 interface LandingPageProps {
   onOpenLogin?: () => void;
-  onOpenPlans?: () => void;
   hardwareId?: string;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({
-  onOpenLogin,
-  onOpenPlans,
-  hardwareId = 'MZ-DEMO-2026'
-}) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onOpenLogin, hardwareId = 'MZ-DEMO-2026' }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'cycles' | 'invoices' | 'reports'>('dashboard');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const [isAppActivated] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('app_activated') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [activeScreen, setActiveScreen] = useState(0);
+  const [heroVisible, setHeroVisible] = useState(false);
 
   const primaryPhone = '01015965832';
   const secondaryPhone = '01042811502';
+  const BASE = import.meta.env.BASE_URL;
 
-  const openWhatsApp = (planName = 'العام') => {
-    const text = encodeURIComponent(
-      `السلام عليكم، أرغب في الاستفسار والاشتراك في برنامج مزارعنا برو (${planName}). معرّف جهازي هو: ${hardwareId}`
-    );
+  const [isAppActivated] = useState(() => {
+    try { return localStorage.getItem('app_activated') === 'true'; } catch { return false; }
+  });
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Auto-rotate screens
+  useEffect(() => {
+    const iv = setInterval(() => setActiveScreen(s => (s + 1) % screens.length), 3200);
+    return () => clearInterval(iv);
+  }, []);
+
+  const openWhatsApp = (plan = 'العام') => {
+    const text = encodeURIComponent(`السلام عليكم، أرغب في الاستفسار والاشتراك في برنامج مزارعنا برو (${plan}). معرّف جهازي: ${hardwareId}`);
     window.open(`https://wa.me/2${primaryPhone}?text=${text}`, '_blank');
   };
 
-  const handleOpenApp = () => {
-    window.location.hash = '#/app';
-  };
+  const handleOpenApp = () => { window.location.hash = '#/app'; };
 
-  const handleDownloadApk = () => {
-    window.open(APK_DOWNLOAD_URL, '_blank');
-  };
+  const screens = [
+    { src: `${BASE}screens/dashboard.jpg`,  label: 'لوحة التحكم الرئيسية',  color: 'blue' },
+    { src: `${BASE}screens/expenses.jpg`,   label: 'تسجيل المصروفات',        color: 'rose' },
+    { src: `${BASE}screens/revenues.jpg`,   label: 'إدارة الإيرادات',        color: 'emerald' },
+    { src: `${BASE}screens/clients.jpg`,    label: 'كشف حساب العملاء',       color: 'purple' },
+    { src: `${BASE}screens/charts.jpg`,     label: 'التقارير والرسوم البيانية', color: 'amber' },
+    { src: `${BASE}screens/settings.jpg`,   label: 'الإعدادات والمزارع',      color: 'slate' },
+  ];
 
-  const handleDemoStart = () => {
-    handleOpenApp();
-  };
+  // Sections with reveal hooks
+  const stats  = useInView(0.2);
+  const feat   = useInView(0.1);
+  const scrSec = useInView(0.1);
+  const pricing = useInView(0.1);
+  const faqSec = useInView(0.1);
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0A101D] text-slate-100 selection:bg-emerald-500 selection:text-white" dir="rtl" style={{ fontFamily: "'Cairo', sans-serif" }}>
-      
-      {/* شريط ترحيب بالعملاء أصحاب النسخ المفعلة */}
+    <div className="min-h-screen bg-[#060C18] text-slate-100" dir="rtl" style={{ fontFamily: "'Cairo', sans-serif" }}>
+
+      {/* ── Activated user banner ───────────────────────────────────────── */}
       {isAppActivated && (
-        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-blue-700 text-white px-4 py-2.5 text-center text-xs sm:text-sm font-bold flex flex-wrap items-center justify-center gap-2 sm:gap-4 shadow-lg border-b border-emerald-500/30">
-          <span className="flex items-center gap-1.5">
+        <div className="relative bg-gradient-to-r from-emerald-700 via-teal-700 to-blue-800 text-white py-2.5 px-4 text-center text-xs sm:text-sm font-bold flex flex-wrap items-center justify-center gap-3 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=')] opacity-50" />
+          <span className="flex items-center gap-1.5 relative z-10">
             <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>مرحباً بك! نسختك من مزارعنا برو مفعلة وجاهزة للعمل</span>
+            مرحباً! نسختك مفعلة وجاهزة
           </span>
-          <button
-            onClick={handleOpenApp}
-            className="bg-white text-emerald-900 hover:bg-emerald-50 px-3.5 py-1 rounded-xl text-xs font-black shadow transition cursor-pointer flex items-center gap-1.5 active:scale-95"
-          >
+          <button onClick={handleOpenApp} className="relative z-10 bg-white text-emerald-900 hover:bg-emerald-50 px-3.5 py-1 rounded-xl text-xs font-black shadow transition active:scale-95 cursor-pointer flex items-center gap-1.5">
             <LayoutGrid className="w-3.5 h-3.5" />
-            <span>الدخول إلى لوحة التحكم 🚀</span>
+            الدخول إلى لوحة التحكم 🚀
           </button>
         </div>
       )}
 
-      {/* =========================================================
-          1. الشريط العلوي الثابت (Navigation Bar)
-         ========================================================= */}
-      <header className="sticky top-0 z-50 bg-[#0A101D]/90 backdrop-blur-md border-b border-slate-800/80 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          
-          {/* الشعار واسم البرنامج */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 via-blue-600 to-emerald-400 p-0.5 shadow-lg shadow-blue-600/30">
-              <div className="w-full h-full bg-[#0E1726] rounded-[14px] flex items-center justify-center overflow-hidden">
-                <img src={`${import.meta.env.BASE_URL}logo.png`} alt="مزارعنا برو" className="w-9 h-9 object-contain" onError={(e)=>{ (e.target as any).style.display = 'none'; }} />
-                <span className="text-xl font-black text-emerald-400">M</span>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-white tracking-tight">مزارعنا برو</span>
-                <span className="text-[10px] font-extrabold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full">v2026</span>
-              </div>
-              <p className="text-[11px] text-slate-400 font-semibold">إدارة المزارع وحسابات الدواجن الذكية</p>
-            </div>
-          </div>
+      {/* ══════════════════════════════════════════════════════════════════
+          NAVBAR
+         ══════════════════════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-xl bg-[#060C18]/85 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between gap-4 py-3">
 
-          {/* روابط القائمة للشاشات الكبيرة */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-300">
-            <a href="#features" className="hover:text-emerald-400 transition">المميزات</a>
-            <a href="#solutions" className="hover:text-emerald-400 transition">لماذا مزارعنا؟</a>
-            <a href="#screens" className="hover:text-emerald-400 transition">شاشات البرنامج</a>
-            <a href="#download" className="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
-              <Smartphone className="w-4 h-4" />
-              <span>تحميل APK</span>
-            </a>
-            <a href="#pricing" className="hover:text-emerald-400 transition">الأسعار والباقات</a>
-            <a href="#faq" className="hover:text-emerald-400 transition">الأسئلة الشائعة</a>
+          {/* Logo */}
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 cursor-pointer shrink-0">
+            <div className="relative w-11 h-11 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 to-emerald-500 p-0.5 shadow-lg shadow-blue-600/30">
+              <div className="w-full h-full bg-[#0E1726] rounded-[13px] flex items-center justify-center">
+                <img src={`${BASE}logo.png`} alt="مزارعنا برو" className="w-8 h-8 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <span className="text-lg font-black text-emerald-400 leading-none">M</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-black text-white">مزارعنا برو</span>
+                <span className="text-[9px] font-extrabold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 px-1.5 py-0.5 rounded-full">v2026</span>
+              </div>
+              <p className="text-[10px] text-slate-400 font-semibold leading-none">إدارة مزارع الدواجن الذكية</p>
+            </div>
+          </button>
+
+          {/* Nav Links */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-400">
+            {[['#features','المميزات'],['#screens','الشاشات'],['#download','التحميل'],['#pricing','الأسعار'],['#faq','الأسئلة']].map(([href, label]) => (
+              <a key={href} href={href} className="hover:text-white transition-colors duration-200">{label}</a>
+            ))}
           </nav>
 
-          {/* أزرار الإجراء السريعة */}
+          {/* CTA buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
-            {/* زر تحميل APK */}
-            <a
-              href={APK_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-black transition cursor-pointer no-underline"
-              title="تحميل تطبيق أندرويد APK برابط مباشر من ميديا فاير"
-            >
-              <Download className="w-4 h-4" />
-              <span>تحميل APK</span>
+            <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer"
+               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-black transition no-underline">
+              <Download className="w-4 h-4" /> تحميل APK
             </a>
-
-            {/* زر دخول البرنامج */}
-            <button
-              onClick={handleOpenApp}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-blue-600/25 active:scale-95 transition cursor-pointer"
-            >
-              <LayoutGrid className="w-4 h-4 text-emerald-300" />
-              <span>دخول البرنامج</span>
+            <button onClick={handleOpenApp}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-blue-600/25 active:scale-95 transition cursor-pointer">
+              <LayoutGrid className="w-4 h-4 text-emerald-300" /> فتح البرنامج
             </button>
-
-            {/* زر واتساب */}
-            <button
-              onClick={() => openWhatsApp('استفسار مباشر')}
-              className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer"
-            >
+            <button onClick={() => openWhatsApp('استفسار')}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs transition cursor-pointer">
               <MessageCircle className="w-4 h-4 text-emerald-400" />
             </button>
           </div>
 
-          {/* زر القائمة للشاشات الصغيرة */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {/* Mobile hamburger */}
+          <button onClick={() => setMobileMenuOpen(o => !o)} className="lg:hidden p-2 rounded-xl bg-slate-800/80 text-slate-300">
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
-        {/* القائمة المنسدلة للموبايل */}
+        {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#0F172A] border-b border-slate-800 px-6 py-5 space-y-4 text-right animate-in fade-in duration-200">
-            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">المميزات</a>
-            <a href="#solutions" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">لماذا مزارعنا برو؟</a>
-            <a href="#screens" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">معاينة الشاشات</a>
-            <a href="#download" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-emerald-400">📱 تحميل تطبيق أندرويد (APK)</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">الأسعار والباقات</a>
-            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">الأسئلة الشائعة</a>
-            
-            <div className="pt-4 border-t border-slate-800 flex flex-col gap-2.5">
-              <a
-                href={APK_DOWNLOAD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 no-underline"
-              >
-                <Download className="w-4 h-4" />
-                <span>تحميل تطبيق أندرويد (APK)</span>
+          <div className="lg:hidden border-t border-slate-800/60 bg-[#0A1222] px-5 py-5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            {[['#features','🔥 المميزات'],['#screens','📱 شاشات البرنامج'],['#download','⬇️ تحميل APK'],['#pricing','💰 الأسعار والباقات'],['#faq','❓ الأسئلة الشائعة']].map(([href, label]) => (
+              <a key={href} href={href} onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200 py-1">{label}</a>
+            ))}
+            <div className="pt-3 border-t border-slate-800 flex flex-col gap-2.5">
+              <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}
+                 className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 no-underline">
+                <Download className="w-4 h-4" /> تحميل تطبيق أندرويد (APK)
               </a>
-
-              <button
-                onClick={() => { setMobileMenuOpen(false); handleOpenApp(); }}
-                className="w-full py-3 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30"
-              >
-                <LayoutGrid className="w-4 h-4" />
-                <span>فتح البرنامج / لوحة التحكم</span>
+              <button onClick={() => { setMobileMenuOpen(false); handleOpenApp(); }}
+                className="w-full py-3 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center gap-2 cursor-pointer">
+                <LayoutGrid className="w-4 h-4" /> فتح البرنامج
               </button>
-
-              <button
-                onClick={() => { setMobileMenuOpen(false); openWhatsApp('استفسار مباشر'); }}
-                className="w-full py-3 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>تواصل معنا عبر واتساب</span>
+              <button onClick={() => { setMobileMenuOpen(false); openWhatsApp('استفسار'); }}
+                className="w-full py-3 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
+                <MessageCircle className="w-4 h-4" /> واتساب
               </button>
             </div>
           </div>
         )}
       </header>
 
-      {/* =========================================================
-          2. الواجهة الرئيسية (Hero Section)
-         ========================================================= */}
-      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-32">
-        {/* تأثيرات الإضاءة في الخلفية */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] bg-gradient-to-tr from-blue-600/20 to-emerald-500/15 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute -top-10 -right-10 w-96 h-96 bg-blue-700/10 blur-[100px] rounded-full pointer-events-none" />
+      {/* ══════════════════════════════════════════════════════════════════
+          HERO
+         ══════════════════════════════════════════════════════════════════ */}
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+        <GlowOrbs />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          
-          {/* شارة التميز العلوية */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-emerald-400 text-xs sm:text-sm font-bold mb-8 shadow-inner animate-in fade-in slide-in-from-bottom-3 duration-500">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span>النظام المحاسبي والإداري الأول لمزارع وتجارة الدواجن</span>
-          </div>
+        {/* Animated grid lines */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: 'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)', backgroundSize: '60px 60px' }} />
 
-          {/* العنوان الرئيسي الكبير */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight sm:leading-tight lg:leading-tight max-w-4xl mx-auto tracking-tight">
-            وداعاً للدفاتر الورقية وخسائر الدورات!
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400">
-              أدِر مزرعتك وحساباتك بدقة من موبايلك
-            </span>
-          </h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20 lg:py-28 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
 
-          {/* الوصف التعريفي */}
-          <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-medium leading-relaxed">
-            احسب تكلفة العلف والأدوية والكتكوت، معامل التحويل الغذائي (FCR)، نسبة النافق، تكلفة الكيلو والربح الصافي في لحظة. يعمل بالكامل <span className="text-emerald-400 font-extrabold underline decoration-emerald-500/50">بدون إنترنت</span> على الموبايل والكمبيوتر.
-          </p>
-
-          {/* أزرار الإجراء الرئيسية */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-2xl mx-auto">
-            {/* زر دخول البرنامج المباشر */}
-            <button
-              onClick={handleOpenApp}
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm sm:text-base shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition cursor-pointer"
-            >
-              <LayoutGrid className="w-5 h-5 text-emerald-300" />
-              <span>دخول البرنامج / لوحة التحكم</span>
-            </button>
-
-            {/* زر تحميل APK المباشر من ميديا فاير */}
-            <a
-              href={APK_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm sm:text-base shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition cursor-pointer no-underline"
-            >
-              <Download className="w-5 h-5" />
-              <span>تحميل تطبيق أندرويد (APK)</span>
-            </a>
-
-            {/* زر الاشتراك والتواصل عبر واتساب */}
-            <button
-              onClick={() => openWhatsApp('استفسار واشتراك')}
-              className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 font-bold text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 active:scale-95 transition cursor-pointer"
-            >
-              <MessageCircle className="w-5 h-5 text-emerald-400" />
-              <span>اشتراك عبر واتساب</span>
-            </button>
-          </div>
-
-          {/* شريط الميزات السريعة */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm font-bold text-slate-400">
-            <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-3.5 py-1.5 rounded-full">
-              <WifiOff className="w-4 h-4 text-emerald-400" />
-              <span>يعمل 100% بدون نت</span>
+          {/* Left: Text */}
+          <div className={`text-right transition-all duration-1000 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/80 border border-slate-700/80 text-emerald-400 text-xs font-bold mb-6 shadow-inner">
+              <Sparkles className="w-4 h-4" />
+              <span>النظام المحاسبي الأول لمزارع الدواجن في مصر</span>
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
             </div>
-            <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-3.5 py-1.5 rounded-full">
-              <Smartphone className="w-4 h-4 text-blue-400" />
-              <span>متاح أندرويد وآيفون وكمبيوتر</span>
-            </div>
-            <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-3.5 py-1.5 rounded-full">
-              <FileText className="w-4 h-4 text-purple-400" />
-              <span>فواتير PDF تطبع وتشارك فوراً</span>
-            </div>
-            <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-3.5 py-1.5 rounded-full">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>بياناتك آمنة ومشفرة</span>
-            </div>
-          </div>
 
-          {/* =========================================================
-              معاينة حية مجسمة للوحة التحكم (Dashboard Live Mockup)
-             ========================================================= */}
-          <div className="mt-14 relative max-w-5xl mx-auto">
-            <div className="relative rounded-3xl bg-gradient-to-b from-slate-800 to-slate-950 p-3 sm:p-4 shadow-2xl border border-slate-700/80">
-              
-              {/* شريط الإحصائيات الحية داخل المعاينة */}
-              <div className="bg-[#0B132B] rounded-2xl p-4 sm:p-6 border border-slate-800 text-right">
-                
-                {/* الهيدر العلوي للمعاينة */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-800">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs sm:text-sm font-black text-white">دورة تسمين عنبر رقم (١) • جارية الآن</span>
-                  </div>
-                  <div className="text-xs font-bold text-slate-400 flex items-center gap-3">
-                    <span>العدد: ٥,٠٠٠ كتكوت</span>
-                    <span>•</span>
-                    <span className="text-emerald-400">اليوم: ٣٢</span>
-                  </div>
-                </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">
+              وداعاً للدفاتر<br />
+              <span className="relative">
+                <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-400 via-teal-300 to-blue-400">
+                  الورقية!
+                </span>
+                <span className="absolute -bottom-1 right-0 w-full h-0.5 bg-gradient-to-l from-emerald-400 to-blue-400 rounded-full" />
+              </span>
+              <br />
+              <span className="text-3xl sm:text-4xl text-slate-300 font-bold">أدِر مزرعتك بذكاء</span>
+            </h1>
 
-                {/* 4 بطاقات إحصائيات سريعة */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                  
-                  {/* البطاقة 1: الأرباح المتوقعة */}
-                  <div className="bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-3.5 sm:p-4 text-right">
-                    <div className="flex items-center justify-between text-slate-400 mb-1">
-                      <span className="text-[11px] font-bold">صافي الربح المتوقع</span>
-                      <TrendingUp className="w-4 h-4 text-emerald-400" />
-                    </div>
-                    <p className="text-lg sm:text-2xl font-black text-emerald-400">+٦٨,٥٠٠ <span className="text-xs font-bold">ج.م</span></p>
-                    <span className="text-[10px] text-emerald-500/90 font-bold block mt-1">↑ نسبة أرباح ممتازة</span>
-                  </div>
-
-                  {/* البطاقة 2: معامل التحويل الغذائي FCR */}
-                  <div className="bg-slate-900/90 border border-blue-500/30 rounded-2xl p-3.5 sm:p-4 text-right">
-                    <div className="flex items-center justify-between text-slate-400 mb-1">
-                      <span className="text-[11px] font-bold">معامل التحويل (FCR)</span>
-                      <BarChart3 className="w-4 h-4 text-blue-400" />
-                    </div>
-                    <p className="text-lg sm:text-2xl font-black text-blue-400">١.٤٨</p>
-                    <span className="text-[10px] text-slate-400 font-bold block mt-1">متوسط وزن: ٢.١٥ كجم</span>
-                  </div>
-
-                  {/* البطاقة 3: تكلفة الكيلو */}
-                  <div className="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3.5 sm:p-4 text-right">
-                    <div className="flex items-center justify-between text-slate-400 mb-1">
-                      <span className="text-[11px] font-bold">تكلفة الكيلو الحي</span>
-                      <DollarSign className="w-4 h-4 text-purple-400" />
-                    </div>
-                    <p className="text-lg sm:text-2xl font-black text-purple-400">٦٩.٥٠ <span className="text-xs font-bold">ج.م</span></p>
-                    <span className="text-[10px] text-slate-400 font-bold block mt-1">شامل العلف والأدوية والتدفئة</span>
-                  </div>
-
-                  {/* البطاقة 4: نسبة النافق */}
-                  <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-3.5 sm:p-4 text-right">
-                    <div className="flex items-center justify-between text-slate-400 mb-1">
-                      <span className="text-[11px] font-bold">نسبة النافق الإجمالية</span>
-                      <CheckCircle2 className="w-4 h-4 text-amber-400" />
-                    </div>
-                    <p className="text-lg sm:text-2xl font-black text-amber-400">١.٨%</p>
-                    <span className="text-[10px] text-slate-400 font-bold block mt-1">٩٠ طائر من أصل ٥,٠٠٠</span>
-                  </div>
-                </div>
-
-                {/* شريط الإجراءات في المعاينة */}
-                <div className="bg-slate-950/70 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs font-bold">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <span className="text-emerald-400">●</span>
-                    <span>آخر تحديث للحسابات: اليوم الساعة ٥:٣٠ م</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={onOpenLogin || handleDemoStart} className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] transition">
-                      تجربة كل الشاشات بالتفصيل ←
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================
-          3. قسم مقارنة: الدفاتر الورقية مقابل مزارعنا برو (Why Mazareana?)
-         ========================================================= */}
-      <section id="solutions" className="py-20 bg-[#070D18] border-t border-b border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs sm:text-sm font-extrabold text-emerald-400 tracking-wider uppercase">حل جذري لمشاكل الحسابات</h2>
-            <p className="text-2xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              ليه كل مربين وتجار الدواجن بيسيبوا الدفاتر ويشتركوا في مزارعنا برو؟
+            <p className="mt-6 text-base sm:text-lg text-slate-300 leading-relaxed max-w-lg">
+              احسب <strong className="text-white">تكلفة الكيلو</strong>، <strong className="text-white">معامل FCR</strong>، <strong className="text-white">نسبة النافق</strong>، والأرباح الصافية بضغطة زر.
+              يعمل <span className="text-emerald-400 font-black">100% بدون إنترنت</span> على الموبايل والكمبيوتر.
             </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
-            
-            {/* بطاقة الدفاتر الورقية */}
-            <div className="bg-rose-950/20 border-2 border-rose-900/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3.5 py-1.5 rounded-full text-xs font-black mb-4">
-                  ❌ الطرق التقليدية والدفاتر الورقية
+            {/* Quick badges */}
+            <div className="flex flex-wrap gap-2.5 mt-6">
+              {[
+                { icon: WifiOff, label: 'يعمل أوفلاين', color: 'emerald' },
+                { icon: Smartphone, label: 'أندرويد + كمبيوتر', color: 'blue' },
+                { icon: FileText, label: 'فواتير PDF', color: 'purple' },
+                { icon: ShieldCheck, label: 'بيانات آمنة', color: 'amber' },
+              ].map(({ icon: Icon, label, color }) => (
+                <div key={label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-${color}-500/10 border border-${color}-500/20 text-${color}-300 text-xs font-bold`}>
+                  <Icon className="w-3.5 h-3.5" />{label}
                 </div>
-                <h3 className="text-lg font-black text-rose-200 mb-4">معاناة يومية وخسائر غير محسوبة:</h3>
-                <ul className="space-y-3.5 text-xs sm:text-sm font-bold text-slate-300">
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-rose-400 text-base leading-none">✕</span>
-                    <span>ضياع فواتير العلف والأدوية وصعوبة تجميع المصروفات آخر الدورة.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-rose-400 text-base leading-none">✕</span>
-                    <span>عدم معرفة تكلفة الكيلو الحقيقية بدقة، مما يجعلك تبيع بالخسارة دون أن تدري!</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-rose-400 text-base leading-none">✕</span>
-                    <span>لخبطة ديون التجار والمجازر وضياع فلوسك لعدم وجود كشف حساب منظم.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="text-rose-400 text-base leading-none">✕</span>
-                    <span>تلف أو ضياع الدفاتر في قلب العنبر يمسح تاريخ تعاملاتك بالكامل.</span>
-                  </li>
-                </ul>
-              </div>
+              ))}
             </div>
 
-            {/* بطاقة نظام مزارعنا برو */}
-            <div className="bg-emerald-950/25 border-2 border-emerald-500/50 rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative shadow-2xl shadow-emerald-950/40">
-              <div className="absolute -top-3 left-6 bg-emerald-500 text-slate-950 px-3 py-1 rounded-full text-[11px] font-black tracking-wide shadow-md">
-                الحل الأذكى والأسلس 🚀
-              </div>
-              <div>
-                <div className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-black mb-4">
-                  ✅ مع تطبيق مزارعنا برو الذكي
-                </div>
-                <h3 className="text-lg font-black text-emerald-200 mb-4">أمان كامل وتحكم فوري في مزرعتك:</h3>
-                <ul className="space-y-3.5 text-xs sm:text-sm font-bold text-slate-200">
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <span>تسجيل المصروفات يوماً بيوم وحساب الأرباح الصافية بدقة في ثانية.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <span>حساب معامل التحويل (FCR) وتكلفة الكيلو الحي لحظياً لضبط خطة التغذية.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <span>كشوف حسابات دقيقة لكل تاجر ومورد ومشاركتها فواتير ومطالبات عبر واتساب.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <span>يعمل بالكامل بدون نت (Offline)، ونسخ احتياطي فوري يحمي بياناتك للأبد.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================
-          4. المميزات الست الأساسية (Core Features Grid)
-         ========================================================= */}
-      <section id="features" className="py-20 lg:py-28 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs sm:text-sm font-extrabold text-blue-400 tracking-wider uppercase">إمكانيات صنعت خصيصاً لمجال الدواجن</h2>
-            <p className="text-2xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              كل ما تحتاجه لإدارة مزرعتك وتجارتك في مكان واحد
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            {/* ميزة 1: إدارة الدورات */}
-            <div className="bg-slate-900/70 border border-slate-800 hover:border-blue-500/50 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 group">
-              <div className="w-14 h-14 rounded-2xl bg-blue-600/15 text-blue-400 border border-blue-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                <Layers className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">إدارة دورات التسمين والبياض</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                متابعة دورية يومية للأعمار، استهلاك العلف اليومي، برامج التحصين والأدوية، وحساب تكاليف النشارة والتدفئة والعمالة.
-              </p>
-            </div>
-
-            {/* ميزة 2: معامل التحويل وحساب الكيلو */}
-            <div className="bg-slate-900/70 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 group">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                <BarChart3 className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">معامل التحويل FCR والنافق</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                حساب فوري لمعامل تحويل العلف إلى لحم، متوسط وزن الطائر، ونسبة النفوق لمقارنتها بالمعايير القياسية بدقة.
-              </p>
-            </div>
-
-            {/* ميزة 3: كشوف حسابات العملاء والموردين */}
-            <div className="bg-slate-900/70 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 group">
-              <div className="w-14 h-14 rounded-2xl bg-purple-600/15 text-purple-400 border border-purple-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                <Users className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">كشوف حسابات التجار والديون</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                سجل متكامل لكل تاجر ومجزرة: المسحوبات، التوريدات، المدفوعات، والمتبقي. اعرف فلوسك اللي برة بضغطة زر.
-              </p>
-            </div>
-
-            {/* ميزة 4: فواتير PDF ومشاركتها عبر واتساب */}
-            <div className="bg-slate-900/70 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 group">
-              <div className="w-14 h-14 rounded-2xl bg-amber-600/15 text-amber-400 border border-amber-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                <FileText className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">فواتير بيع سريعة ومطالبات واتساب</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                إصدار فواتير بيع مع احتساب الأقفاص ونسبة التصفية، وطباعتها أو إرسالها للتاجر كفاتورة PDF أنيقة عبر واتساب.
-              </p>
-            </div>
-
-            {/* ميزة 5: شغال بدون إنترنت */}
-            <div className="bg-slate-900/70 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 group">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                <WifiOff className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">يعمل بدون إنترنت تماماً (Offline)</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                عنابر الدواجن غالباً شبكتها ضعيفة، لذلك صممنا البرنامج ليعمل بكفاءة 100% بدون نت بدون أن يتوقف أي شيء.
-              </p>
-            </div>
-
-            {/* ميزة 6: نسخ احتياطي وأمان للبيانات */}
-            <div className="bg-slate-900/70 border border-slate-800 hover:border-indigo-500/50 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 group">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-600/15 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-black text-white mb-2">نسخ احتياطي وأمان غير محدود</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                تصدير واستيراد بياناتك بنقرة واحدة، ونقلها لأي موبايل أو كمبيوتر جديد في ثوانٍ دون قلق من فقدان أي رقم.
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================
-          5. تبويبات استعراض الشاشات (Interactive Screens Showcase)
-         ========================================================= */}
-      <section id="screens" className="py-20 bg-[#070D18] border-t border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-xs sm:text-sm font-extrabold text-emerald-400 tracking-wider uppercase">تصميم بسيط وسهل لكل المربين</h2>
-            <p className="text-2xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              شاهد بنفسك كيف تبدو واجهات مزارعنا برو
-            </p>
-            <p className="text-xs sm:text-sm text-slate-400 mt-2">لا يحتاج أي خبرة محاسبية سابقة، بسيط ومصمم باللغة العربية الواضحة</p>
-          </div>
-
-          {/* أزرار التبويبات */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-5 py-2.5 rounded-2xl font-extrabold text-xs transition cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              📊 لوحة التحكم والإحصائيات
-            </button>
-
-            <button
-              onClick={() => setActiveTab('cycles')}
-              className={`px-5 py-2.5 rounded-2xl font-extrabold text-xs transition cursor-pointer ${
-                activeTab === 'cycles'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              🐔 تكاليف ودورات التسمين
-            </button>
-
-            <button
-              onClick={() => setActiveTab('invoices')}
-              className={`px-5 py-2.5 rounded-2xl font-extrabold text-xs transition cursor-pointer ${
-                activeTab === 'invoices'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              🧾 الفواتير والمبيعات
-            </button>
-
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`px-5 py-2.5 rounded-2xl font-extrabold text-xs transition cursor-pointer ${
-                activeTab === 'reports'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-              }`}
-            >
-              👥 حسابات العملاء والتجار
-            </button>
-          </div>
-
-          {/* محتوى الشاشة المعروضة حسب التبويب */}
-          <div className="max-w-4xl mx-auto bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl text-right animate-in fade-in duration-300">
-            {activeTab === 'dashboard' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h4 className="text-base font-black text-white">نظرة عامة على مزرعتك وعنابرك</h4>
-                  <span className="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">تحديث لحظي</span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  تعطيك لوحة التحكم نبذة كاملة عن إجمالي إيرادات المزرعة، المصروفات الجارية، صافي الأرباح، ورصيد ديون العملاء والموردين بدون الحاجة للبحث في أوراق متناثرة.
-                </p>
-                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800/80 grid sm:grid-cols-3 gap-4 text-center">
-                  <div className="p-3 bg-slate-900 rounded-xl">
-                    <span className="text-[11px] text-slate-400 font-bold block">إجمالي المبيعات</span>
-                    <span className="text-lg font-black text-emerald-400">٣٤٥,٢٠٠ ج.م</span>
-                  </div>
-                  <div className="p-3 bg-slate-900 rounded-xl">
-                    <span className="text-[11px] text-slate-400 font-bold block">إجمالي المصروفات</span>
-                    <span className="text-lg font-black text-rose-400">٢٤٢,١٠٠ ج.م</span>
-                  </div>
-                  <div className="p-3 bg-slate-900 rounded-xl">
-                    <span className="text-[11px] text-slate-400 font-bold block">صافي الربح الفعلي</span>
-                    <span className="text-lg font-black text-blue-400">+١٠٣,١٠٠ ج.م</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'cycles' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h4 className="text-base font-black text-white">شاشة حسابات دورة الدواجن</h4>
-                  <span className="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold">متابعة دقيقة</span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  سجل تكاليف العلف يومياً بجميع مراحله (بادي، نامي، ناهي)، الأدوية البيطرية والتحصينات، النشارة والغاز والكهرباء، ليحسب لك البرنامج تكلفة الكيلو والفرخة تلقائياً.
-                </p>
-                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800/80 space-y-2 text-xs font-bold">
-                  <div className="flex justify-between py-1.5 border-b border-slate-900">
-                    <span className="text-slate-400">استهلاك العلف الإجمالي:</span>
-                    <span className="text-white">١٦.٢ طن (متوسط ٣.٢٤ كجم / طائر)</span>
-                  </div>
-                  <div className="flex justify-between py-1.5 border-b border-slate-900">
-                    <span className="text-slate-400">معامل التحويل (FCR):</span>
-                    <span className="text-emerald-400 font-mono text-sm">١.٤٧ (ممتاز)</span>
-                  </div>
-                  <div className="flex justify-between py-1.5">
-                    <span className="text-slate-400">سعر بيع البورصة المتوقع:</span>
-                    <span className="text-blue-400">٧٨ ج.م / كجم (الربح المتوقع: ٨.٥ ج/كجم)</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'invoices' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h4 className="text-base font-black text-white">إصدار ومشاركة فواتير البيع</h4>
-                  <span className="text-xs bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full font-bold">طباعة فورية</span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  أنشئ فاتورة بيع للتاجر في ثانية: حدد الوزن القائم، وزن الأقفاص فارغة، نسبة التصفية، والسعر. يطبع الفاتورة أو يرسلها مباشرة للتاجر عبر واتساب PDF.
-                </p>
-                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800/80 flex items-center justify-between text-xs font-bold">
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">فاتورة بيع رقم #١٠٤</span>
-                    <span className="text-white text-sm font-black">تاجر: مجزر الأمانة (الشرقية)</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-emerald-400 font-mono text-base font-black block">٥٤,٣٢٠ ج.م</span>
-                    <span className="text-slate-400 text-[10px]">تم السداد: ٢٠,٠٠٠ • المتبقي: ٣٤,٣٢٠</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'reports' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h4 className="text-base font-black text-white">كشف حساب العميل والمورد</h4>
-                  <span className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full font-bold">حماية ديونك</span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  كشف حساب تفصيلي لكل تاجر يوضح حركات الشراء والسداد وتواريخ الدفعات، مع إمكانية إرسال رسالة مطالبة ودية بضغطة زر واحدة.
-                </p>
-                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800/80 flex items-center justify-between text-xs font-bold">
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">إجمالي ديون التجار لك في السوق:</span>
-                    <span className="text-rose-400 text-lg font-black">٨٧,٤٠٠ ج.م</span>
-                  </div>
-                  <button onClick={() => openWhatsApp('استفسار عن إدارة الديون')} className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition">
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>إرسال مطالبة واتساب</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="pt-4 border-t border-slate-800/80 text-center">
-              <button
-                onClick={handleOpenApp}
-                className="inline-flex items-center gap-2 text-xs font-black text-blue-400 hover:text-blue-300 transition cursor-pointer"
-              >
-                <span>افتح البرنامج الآن وجرّب بنفسك ←</span>
+            {/* CTA Buttons */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <button onClick={handleOpenApp}
+                className="group flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-base shadow-xl shadow-blue-600/30 active:scale-95 transition-all cursor-pointer">
+                <LayoutGrid className="w-5 h-5 text-emerald-300 group-hover:rotate-12 transition-transform" />
+                <span>فتح البرنامج الآن</span>
+                <ArrowLeft className="w-4 h-4 opacity-70" />
               </button>
-            </div>
-          </div>
 
-        </div>
-      </section>
-
-      {/* =========================================================
-          6. قسم تحميل تطبيق الأندرويد المباشر (APK Download Section)
-         ========================================================= */}
-      <section id="download" className="py-20 bg-gradient-to-b from-[#080E1C] via-[#0E1B33] to-[#080E1C] relative border-t border-b border-blue-900/30 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none" />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-blue-950/70 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-12 shadow-2xl text-center">
-            
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black mb-6">
-              <Smartphone className="w-4 h-4 text-emerald-400" />
-              <span>تطبيق أندرويد الأصلي متاح الآن للتحميل المباشر</span>
-            </div>
-
-            <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight max-w-2xl mx-auto">
-              حمّل تطبيق <span className="text-emerald-400">مزارعنا برو</span> بصيغة APK مباشرة على هاتفك
-            </h2>
-
-            <p className="mt-4 text-xs sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed font-medium">
-              استمتع بأقوى تجربة لإدارة مزرعتك وحساباتك بسرعة فائقة وبدون الحاجة لإنترنت. ملف APK خفيف وآمن 100% وجاهز للتثبيت على جميع هواتف الأندرويد.
-            </p>
-
-            {/* زر التحميل الكبير من MediaFire */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href={APK_DOWNLOAD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-base sm:text-lg shadow-2xl shadow-emerald-500/30 flex items-center justify-center gap-3 transition active:scale-95 cursor-pointer no-underline"
-              >
-                <Download className="w-6 h-6 stroke-[2.5]" />
-                <span>تحميل MazareanaPro.apk (رابط ميديا فاير السريع)</span>
+              <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-base shadow-xl shadow-emerald-600/25 active:scale-95 transition-all cursor-pointer no-underline">
+                <Download className="w-5 h-5" />
+                <span>تحميل APK أندرويد</span>
               </a>
-
-              <button
-                onClick={handleOpenApp}
-                className="w-full sm:w-auto px-8 py-5 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 text-white border border-slate-700 font-black text-base flex items-center justify-center gap-2.5 transition active:scale-95 cursor-pointer"
-              >
-                <ExternalLink className="w-5 h-5 text-blue-400" />
-                <span>أو تشغيل البرنامج في المتصفح</span>
-              </button>
             </div>
 
-            {/* خطوات التثبيت السريعة */}
-            <div className="mt-12 pt-8 border-t border-slate-800/80">
-              <h4 className="text-sm font-black text-slate-300 mb-6">خطوات التثبيت السريعة في دقيقة واحدة:</h4>
-              <div className="grid sm:grid-cols-3 gap-4 text-right">
-                
-                <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 font-black flex items-center justify-center shrink-0 text-sm">
-                    ١
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-black text-white mb-1">اضغط تحميل</h5>
-                    <p className="text-[11px] text-slate-400 leading-normal">
-                      اضغط على زر التحميل وسيتم تنزيل ملف APK الصغير على هاتفك من MediaFire خلال ثوانٍ.
-                    </p>
-                  </div>
-                </div>
+            <button onClick={() => openWhatsApp('استفسار من Hero')}
+              className="mt-3 flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-emerald-300 transition cursor-pointer group">
+              <MessageCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>اشتراك أو استفسار عبر واتساب</span>
+            </button>
+          </div>
 
-                <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 font-black flex items-center justify-center shrink-0 text-sm">
-                    ٢
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-black text-white mb-1">السماح بالتثبيت</h5>
-                    <p className="text-[11px] text-slate-400 leading-normal">
-                      افتح الملف من الإشعارات أو التنزيلات، وإذا طلب هاتفك السماح بالتثبيت اختر "السماح".
-                    </p>
-                  </div>
-                </div>
+          {/* Right: Floating phone stack */}
+          <div className={`relative flex items-center justify-center transition-all duration-1200 delay-300 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
+            {/* Glow behind phones */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-64 h-64 bg-blue-500/15 rounded-full blur-[80px]" />
+            </div>
 
-                <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 font-black flex items-center justify-center shrink-0 text-sm">
-                    ٣
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-black text-white mb-1">افتح وابدأ الإدارة</h5>
-                    <p className="text-[11px] text-slate-400 leading-normal">
-                      ستجد أيقونة التطبيق على شاشة موبايلك، افتحه وابدأ حسابات دورتك فوراً!
-                    </p>
-                  </div>
-                </div>
+            {/* Back phone */}
+            <div className="absolute right-0 top-4 opacity-70 scale-90 rotate-6 blur-[1px]">
+              <PhoneMockup src={screens[(activeScreen + 2) % screens.length].src} />
+            </div>
 
+            {/* Front phone with auto-rotate */}
+            <div className="relative z-10 drop-shadow-2xl transition-all duration-700" style={{ filter: 'drop-shadow(0 25px 50px rgba(59,130,246,0.25))' }}>
+              <PhoneMockup src={screens[activeScreen].src} className="" />
+
+              {/* Screen label badge */}
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 backdrop-blur border border-slate-700/80 text-slate-200 text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
+                📱 {screens[activeScreen].label}
               </div>
             </div>
 
+            {/* Screen dots */}
+            <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 flex gap-2">
+              {screens.map((_, i) => (
+                <button key={i} onClick={() => setActiveScreen(i)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${i === activeScreen ? 'bg-blue-400 scale-125' : 'bg-slate-700 hover:bg-slate-500'}`} />
+              ))}
+            </div>
           </div>
+        </div>
 
+        {/* Scroll indicator */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-500 text-xs font-bold animate-bounce">
+          <span>اكتشف المزيد</span>
+          <ChevronDown className="w-4 h-4" />
         </div>
       </section>
 
-      {/* =========================================================
-          7. خطط الأسعار والباقات (Pricing Plans)
-         ========================================================= */}
-      <section id="pricing" className="py-20 lg:py-28 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs sm:text-sm font-extrabold text-emerald-400 tracking-wider uppercase">أسعار رمزية ومناسبة للجميع</h2>
-            <p className="text-2xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              اختر الباقة المناسبة لمزرعتك وابدأ التفعيل فوراً
-            </p>
-            <p className="text-xs sm:text-sm text-slate-400 mt-2">
-              الدفع بكل سهولة عبر فودافون كاش، إنستاباي، أو أي محفظة إلكترونية
-            </p>
+      {/* ══════════════════════════════════════════════════════════════════
+          STATS COUNTER SECTION
+         ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-14 border-y border-slate-800/50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-900/8 to-transparent" />
+        <div ref={stats.ref} className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-5 transition-all duration-700 ${stats.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            {[
+              { value: 500, suffix: '+', label: 'مربي وتاجر نشط', color: 'blue' },
+              { value: 20000, suffix: '+', label: 'دورة تسمين مسجلة', color: 'emerald' },
+              { value: 100, suffix: '%', label: 'يعمل بدون إنترنت', color: 'purple' },
+              { value: 30, suffix: ' ج.م', label: 'سعر الاشتراك الشهري', color: 'amber' },
+            ].map(item => (
+              <StatCard key={item.label} {...item} started={stats.inView} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          PROBLEM vs SOLUTION
+         ══════════════════════════════════════════════════════════════════ */}
+      <section id="solutions" className="py-24 relative overflow-hidden">
+        <GlowOrbs />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="text-center mb-14">
+            <span className="text-xs font-extrabold text-emerald-400 tracking-widest uppercase">الحل الجذري</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 leading-tight">
+              ليه كل المربين بيسيبوا الدفاتر؟
+            </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
-            
-            {/* الباقة الشهرية */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-slate-700 transition">
-              <div>
-                <div className="inline-block bg-slate-800 text-slate-300 text-xs font-bold px-3 py-1 rounded-full mb-4">
-                  مرونة كاملة • جرّب براحتك
-                </div>
-                <h3 className="text-xl font-black text-white">الباقة الشهرية</h3>
-                <div className="mt-4 mb-6">
-                  <span className="text-4xl font-black text-white">٣٠</span>
-                  <span className="text-xs text-slate-400 mr-2 font-bold">جنيه / شهر</span>
-                </div>
-                <ul className="space-y-3 text-xs sm:text-sm text-slate-300 font-semibold mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>تفعيل كامل لجميع مميزات البرنامج</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>يعمل بدون إنترنت على الموبايل</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>دعم فني كامل عبر واتساب</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-500">
-                    <span>تتجدد يدوياً كل ٣٠ يوماً</span>
-                  </li>
-                </ul>
+          <div className="grid md:grid-cols-2 gap-6 items-stretch">
+            {/* Old way */}
+            <div className="bg-rose-950/20 border-2 border-rose-900/40 rounded-3xl p-7 relative overflow-hidden group hover:border-rose-700/50 transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="inline-flex items-center gap-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3.5 py-1.5 rounded-full text-xs font-black mb-5">
+                ❌ الطرق التقليدية
               </div>
+              <h3 className="text-lg font-black text-rose-200 mb-5">معاناة يومية بدون حساب:</h3>
+              <ul className="space-y-4">
+                {['ضياع فواتير العلف والأدوية آخر الدورة.','تبيع بالخسارة وأنت مش عارف لأنك مش حاسب تكلفة الكيلو بدقة.','لخبطة ديون التجار وضياع فلوسك في السوق.','تلف الدفاتر في العنبر يمسح كل تاريخك المالي.'].map(text => (
+                  <li key={text} className="flex items-start gap-3 text-sm text-slate-300">
+                    <span className="text-rose-400 text-lg leading-5 shrink-0">✕</span>
+                    <span>{text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-              <button
-                onClick={() => openWhatsApp('الباقة الشهرية')}
-                className="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs transition cursor-pointer"
-              >
+            {/* New way */}
+            <div className="bg-emerald-950/25 border-2 border-emerald-500/50 rounded-3xl p-7 relative overflow-hidden group hover:border-emerald-400/70 transition-all duration-500 shadow-2xl shadow-emerald-950/40">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -top-3.5 left-6 bg-emerald-500 text-slate-950 px-3.5 py-1 rounded-full text-[11px] font-black shadow-lg">
+                ✨ الحل الأذكى والأسهل
+              </div>
+              <div className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-black mb-5 mt-3">
+                ✅ مع مزارعنا برو
+              </div>
+              <h3 className="text-lg font-black text-emerald-200 mb-5">تحكم كامل بضغطة واحدة:</h3>
+              <ul className="space-y-4">
+                {['تسجيل المصروفات يومياً وحساب الأرباح الصافية بدقة.','حساب FCR وتكلفة الكيلو لحظياً لضبط خطة التغذية.','كشوف حسابات دقيقة لكل تاجر ومشاركتها عبر واتساب.','يعمل بدون نت ونسخ احتياطي فوري يحمي بياناتك للأبد.'].map(text => (
+                  <li key={text} className="flex items-start gap-3 text-sm text-slate-200">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          FEATURES GRID
+         ══════════════════════════════════════════════════════════════════ */}
+      <section id="features" className="py-24 bg-[#070D1A] border-t border-slate-800/50">
+        <div ref={feat.ref} className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14">
+            <span className="text-xs font-extrabold text-blue-400 tracking-widest uppercase">المميزات الأساسية</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">كل ما تحتاجه في مكان واحد</h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: Layers,       label: 'إدارة دورات التسمين',         desc: 'متابعة يومية للأعمار والعلف والتحصينات والتكاليف لكل دورة.',                    color: 'blue',    delay: 0 },
+              { icon: BarChart3,    label: 'FCR والنافق تلقائياً',         desc: 'حساب فوري لمعامل التحويل الغذائي وتكلفة الكيلو ومتوسط الوزن.',                 color: 'emerald', delay: 100 },
+              { icon: Users,        label: 'كشوف العملاء والموردين',       desc: 'سجل متكامل لكل تاجر: مسحوبات وتوريدات ومدفوعات والمتبقي.',                     color: 'purple',  delay: 200 },
+              { icon: FileText,     label: 'فواتير PDF واتساب',            desc: 'إصدار فواتير بيع مع نسبة التصفية وإرسالها للتاجر مباشرة.',                     color: 'amber',   delay: 300 },
+              { icon: WifiOff,      label: 'يعمل 100% بدون نت',           desc: 'مصمم للعنابر ذات الشبكة الضعيفة، يعمل بكفاءة كاملة أوفلاين.',                  color: 'teal',    delay: 400 },
+              { icon: ShieldCheck,  label: 'نسخ احتياطي غير محدود',       desc: 'تصدير واستيراد البيانات بنقرة ونقلها لأي جهاز في ثوانٍ.',                      color: 'indigo',  delay: 500 },
+            ].map(({ icon: Icon, label, desc, color, delay }) => (
+              <div key={label}
+                className={`bg-slate-900/60 border border-slate-800 hover:border-${color}-500/50 rounded-3xl p-6 transition-all duration-500 hover:-translate-y-1.5 group cursor-default
+                  ${feat.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                style={{ transitionDelay: `${delay}ms` }}>
+                <div className={`w-13 h-13 w-14 h-14 rounded-2xl bg-${color}-600/15 text-${color}-400 border border-${color}-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-base font-black text-white mb-2">{label}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SCREENS SHOWCASE (Real screenshots)
+         ══════════════════════════════════════════════════════════════════ */}
+      <section id="screens" className="py-24 relative overflow-hidden">
+        <GlowOrbs />
+        <div ref={scrSec.ref} className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="text-center mb-14">
+            <span className="text-xs font-extrabold text-emerald-400 tracking-widest uppercase">معاينة حقيقية</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">شاشات البرنامج الفعلية</h2>
+            <p className="text-sm text-slate-400 mt-2">صور حقيقية من داخل مزارعنا برو – لا تصميمات وهمية</p>
+          </div>
+
+          {/* Large active screen */}
+          <div className="flex flex-col lg:flex-row gap-8 items-center">
+            {/* Phone preview */}
+            <div className={`flex-1 flex items-center justify-center transition-all duration-700 ${scrSec.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+              <div className="relative">
+                {/* Glow */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-56 h-56 bg-blue-500/20 rounded-full blur-[70px]" />
+                </div>
+                {/* Phone frame */}
+                <div className="relative w-[260px] rounded-[40px] bg-slate-900 border-[4px] border-slate-700 shadow-2xl shadow-black/70 overflow-hidden"
+                  style={{ filter: 'drop-shadow(0 30px 60px rgba(59,130,246,0.2))' }}>
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-800 rounded-full z-10" />
+                  <img key={activeScreen} src={screens[activeScreen].src} alt={screens[activeScreen].label} className="w-full object-cover transition-all duration-500" />
+                </div>
+                {/* Badge */}
+                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-lg shadow-blue-600/30">
+                  {screens[activeScreen].label}
+                </div>
+              </div>
+            </div>
+
+            {/* Thumbnails grid */}
+            <div className={`flex-1 grid grid-cols-3 gap-3 transition-all duration-700 delay-200 ${scrSec.inView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+              {screens.map((screen, i) => (
+                <button key={i} onClick={() => setActiveScreen(i)}
+                  className={`relative rounded-2xl overflow-hidden border-2 transition-all duration-300 cursor-pointer group
+                    ${i === activeScreen ? 'border-blue-500 scale-105 shadow-lg shadow-blue-500/30' : 'border-slate-700/60 hover:border-slate-500 opacity-70 hover:opacity-100'}`}>
+                  <div className="relative w-full" style={{ paddingTop: '177%' }}>
+                    <img src={screen.src} alt={screen.label} className="absolute inset-0 w-full h-full object-cover object-top" />
+                    {i === activeScreen && (
+                      <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
+                        <Play className="w-6 h-6 text-white fill-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                    <p className="text-[9px] font-black text-white text-center leading-tight">{screen.label}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          DOWNLOAD SECTION
+         ══════════════════════════════════════════════════════════════════ */}
+      <section id="download" className="py-24 bg-gradient-to-b from-[#060C18] via-[#0A1527] to-[#060C18] border-t border-blue-900/20 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-emerald-500/8 blur-[140px] rounded-full pointer-events-none" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800/50 border-2 border-emerald-500/40 rounded-3xl p-8 sm:p-12 shadow-2xl text-center relative overflow-hidden">
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black mb-6">
+              <Smartphone className="w-4 h-4" />
+              متاح الآن – تحميل مباشر
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+              حمّل <span className="text-emerald-400">مزارعنا برو APK</span> مجاناً
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+              ملف APK خفيف وآمن لجميع هواتف الأندرويد. لا حاجة للبلاي ستور.
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer"
+                className="group w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-lg shadow-2xl shadow-emerald-500/30 flex items-center justify-center gap-3 transition-all active:scale-95 cursor-pointer no-underline">
+                <Download className="w-6 h-6 group-hover:-translate-y-1 transition-transform stroke-[2.5]" />
+                تحميل MazareanaPro.apk
+              </a>
+              <button onClick={handleOpenApp}
+                className="w-full sm:w-auto px-8 py-5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 font-black text-base flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
+                <ExternalLink className="w-5 h-5 text-blue-400" />
+                تشغيل في المتصفح
+              </button>
+            </div>
+
+            {/* Install steps */}
+            <div className="mt-10 pt-8 border-t border-slate-700/60">
+              <p className="text-xs font-black text-slate-400 mb-5">خطوات التثبيت في دقيقة واحدة:</p>
+              <div className="grid sm:grid-cols-3 gap-4 text-right">
+                {[
+                  { n: '١', title: 'اضغط تحميل', desc: 'سيتم تنزيل ملف APK الصغير من MediaFire خلال ثوانٍ.' },
+                  { n: '٢', title: 'السماح بالتثبيت', desc: 'افتح الملف من التنزيلات واختر "السماح" للتثبيت.' },
+                  { n: '٣', title: 'ابدأ الإدارة', desc: 'افتح التطبيق وابدأ حسابات دورتك الجديدة فوراً!' },
+                ].map(({ n, title, desc }) => (
+                  <div key={n} className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-600/20 text-blue-400 font-black flex items-center justify-center shrink-0 text-sm border border-blue-500/20">{n}</div>
+                    <div>
+                      <h5 className="text-xs font-black text-white mb-1">{title}</h5>
+                      <p className="text-[11px] text-slate-400 leading-normal">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          PRICING
+         ══════════════════════════════════════════════════════════════════ */}
+      <section id="pricing" className="py-24 bg-[#070D1A] border-t border-slate-800/50 relative overflow-hidden">
+        <GlowOrbs />
+        <div ref={pricing.ref} className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="text-center mb-14">
+            <span className="text-xs font-extrabold text-emerald-400 tracking-widest uppercase">أسعار رمزية</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">اختر الباقة المناسبة</h2>
+            <p className="text-sm text-slate-400 mt-2">الدفع عبر فودافون كاش · إنستاباي · أي محفظة إلكترونية</p>
+          </div>
+
+          <div className={`grid md:grid-cols-3 gap-6 items-stretch transition-all duration-700 ${pricing.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+
+            {/* Monthly */}
+            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-7 flex flex-col hover:border-slate-600 transition-all duration-300 hover:-translate-y-1">
+              <div className="inline-block bg-slate-800 text-slate-300 text-xs font-bold px-3 py-1 rounded-full mb-4">مرونة كاملة</div>
+              <h3 className="text-xl font-black text-white">الباقة الشهرية</h3>
+              <div className="mt-4 mb-6 flex items-end gap-2">
+                <span className="text-5xl font-black text-white">٣٠</span>
+                <span className="text-sm text-slate-400 font-bold mb-1">جنيه / شهر</span>
+              </div>
+              <ul className="space-y-3 text-sm text-slate-300 font-semibold mb-8 flex-1">
+                {['جميع المميزات مفتوحة','يعمل أوفلاين','دعم فني واتساب','تتجدد يدوياً كل ٣٠ يوم'].map(f => (
+                  <li key={f} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />{f}</li>
+                ))}
+              </ul>
+              <button onClick={() => openWhatsApp('الباقة الشهرية')}
+                className="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-sm transition cursor-pointer">
                 اشترك في الشهرية (٣٠ ج.م)
               </button>
             </div>
 
-            {/* الباقة السنوية (الأكثر طلباً وتوفيراً) */}
-            <div className="bg-gradient-to-b from-blue-950/60 to-slate-900 border-2 border-blue-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative shadow-2xl shadow-blue-950/60 hover:scale-[1.02] transition-transform">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-1 rounded-full text-xs font-black shadow-md tracking-wider">
-                👑 الأكثر طلباً وتوفيراً (خصم ٣٠%)
+            {/* Yearly – most popular */}
+            <div className="relative bg-gradient-to-b from-blue-950/70 to-slate-900 border-2 border-blue-500 rounded-3xl p-7 flex flex-col shadow-2xl shadow-blue-950/60 hover:-translate-y-2 transition-all duration-300">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-1.5 rounded-full text-xs font-black shadow-lg whitespace-nowrap">
+                👑 الأكثر طلباً • وفّر ١١٠ ج.م
               </div>
-              <div>
-                <div className="inline-block bg-blue-500/20 text-blue-300 text-xs font-bold px-3 py-1 rounded-full mb-4">
-                  سنة كاملة • راحة بال واستقرار
-                </div>
-                <h3 className="text-2xl font-black text-white">الباقة السنوية</h3>
-                <div className="mt-4 mb-6">
-                  <span className="text-5xl font-black text-white">٢٥٠</span>
-                  <span className="text-xs text-slate-300 mr-2 font-bold">جنيه / سنة</span>
-                </div>
-                <ul className="space-y-3.5 text-xs sm:text-sm text-slate-200 font-semibold mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>تفعيل مستمر لمدة ٣٦٥ يوماً كاملة</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>توفير أكثر من ٣٠% مقارنة بالاشتراك الشهري</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>تحديثات مجانية دورية للبرنامج</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>دعم فني وتدريب سريع على الاستخدام</span>
-                  </li>
-                </ul>
+              <div className="inline-block bg-blue-500/20 text-blue-300 text-xs font-bold px-3 py-1 rounded-full mb-4 mt-2">سنة كاملة • راحة بال</div>
+              <h3 className="text-2xl font-black text-white">الباقة السنوية</h3>
+              <div className="mt-4 mb-6 flex items-end gap-2">
+                <span className="text-5xl font-black text-white">٢٥٠</span>
+                <span className="text-sm text-slate-300 font-bold mb-1">جنيه / سنة</span>
               </div>
-
-              <button
-                onClick={() => openWhatsApp('الباقة السنوية')}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-lg shadow-blue-600/30 transition cursor-pointer"
-              >
+              <ul className="space-y-3 text-sm text-slate-200 font-semibold mb-8 flex-1">
+                {['٣٦٥ يوم تفعيل مستمر','توفير ٣٠% عن الشهرية','تحديثات مجانية','دعم فني أولوية'].map(f => (
+                  <li key={f} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />{f}</li>
+                ))}
+              </ul>
+              <button onClick={() => openWhatsApp('الباقة السنوية')}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-lg shadow-blue-600/30 transition cursor-pointer">
                 اشترك في السنوية (٢٥٠ ج.م)
               </button>
             </div>
 
-            {/* باقة مدى الحياة */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-slate-700 transition">
-              <div>
-                <div className="inline-block bg-purple-500/15 text-purple-300 text-xs font-bold px-3 py-1 rounded-full mb-4">
-                  دفعة واحدة للأبد • استثمار دائم
-                </div>
-                <h3 className="text-xl font-black text-white">مدى الحياة</h3>
-                <div className="mt-4 mb-6">
-                  <span className="text-4xl font-black text-white">١,٣٥٠</span>
-                  <span className="text-xs text-slate-400 mr-2 font-bold">جنيه (مرة واحدة)</span>
-                </div>
-                <ul className="space-y-3 text-xs sm:text-sm text-slate-300 font-semibold mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>امتلاك البرنامج مدى الحياة لجهازك</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>بدون أي اشتراكات أو تجديد شهري أو سنوي</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>أولوية الدعم الفني وتحديثات مدى الحياة</span>
-                  </li>
-                </ul>
+            {/* Lifetime */}
+            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-7 flex flex-col hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-1">
+              <div className="inline-flex items-center gap-1.5 bg-purple-500/15 text-purple-300 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                <Zap className="w-3 h-3" /> دفعة واحدة للأبد
               </div>
-
-              <button
-                onClick={() => openWhatsApp('باقة مدى الحياة')}
-                className="w-full py-3.5 rounded-2xl bg-purple-700 hover:bg-purple-600 text-white font-extrabold text-xs transition cursor-pointer"
-              >
+              <h3 className="text-xl font-black text-white">مدى الحياة</h3>
+              <div className="mt-4 mb-1 flex items-end gap-2">
+                <span className="text-4xl font-black text-white">١,٣٥٠</span>
+                <span className="text-sm text-slate-400 font-bold mb-1">جنيه</span>
+              </div>
+              <div className="text-xs text-slate-500 line-through mb-5">الأصلي: ٤,٥٠٠ ج.م • خصم ٧٠٪</div>
+              <ul className="space-y-3 text-sm text-slate-300 font-semibold mb-8 flex-1">
+                {['امتلاك دائم للبرنامج','بدون أي اشتراك مستقبلي','أولوية الدعم الفني','تحديثات مدى الحياة'].map(f => (
+                  <li key={f} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />{f}</li>
+                ))}
+              </ul>
+              <button onClick={() => openWhatsApp('باقة مدى الحياة')}
+                className="w-full py-3.5 rounded-2xl bg-purple-700 hover:bg-purple-600 text-white font-extrabold text-sm transition cursor-pointer">
                 امتلكه مدى الحياة (١,٣٥٠ ج.م)
               </button>
             </div>
 
           </div>
 
-          {/* وسائل الدفع المعتمدة */}
-          <div className="mt-12 text-center text-xs font-bold text-slate-400 flex flex-wrap items-center justify-center gap-4">
-            <span>طرق الدفع السريعة:</span>
-            <span className="bg-slate-800 text-rose-300 px-3 py-1 rounded-lg">فودافون كاش ({primaryPhone})</span>
-            <span className="bg-slate-800 text-indigo-300 px-3 py-1 rounded-lg">إنستاباي (InstaPay)</span>
-            <span className="bg-slate-800 text-emerald-300 px-3 py-1 rounded-lg">أي محفظة إلكترونية في مصر</span>
+          {/* Payment methods */}
+          <div className="mt-10 text-center text-xs font-bold text-slate-400 flex flex-wrap items-center justify-center gap-4">
+            <span>طرق الدفع:</span>
+            {['📱 فودافون كاش: 01015965832','💳 إنستاباي','🏦 أي محفظة إلكترونية'].map(m => (
+              <span key={m} className="bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-lg">{m}</span>
+            ))}
           </div>
-
         </div>
       </section>
 
-      {/* =========================================================
-          7. آراء وتجارب العملاء (Testimonials)
-         ========================================================= */}
-      <section className="py-20 bg-[#070D18] border-t border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs sm:text-sm font-extrabold text-blue-400 tracking-wider uppercase">ثقة المربين في مختلف المحافظات</h2>
-            <p className="text-2xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              تجارب حقيقية من أرض الواقع
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-right">
-              <div className="flex items-center gap-1 text-amber-400 mb-3 text-sm">★★★★★</div>
-              <p className="text-xs sm:text-sm text-slate-300 font-semibold leading-relaxed mb-4">
-                "البرنامج ده ريحني من كابوس الدفاتر. في آخر كل دورة كنت بقعد يومين أجمع فواتير العلف والنافق وأطلع غلطان. دلوقتي بضغطة زر عارف كسبت كام بالمليم."
-              </p>
-              <div className="border-t border-slate-800 pt-3">
-                <h5 className="text-sm font-black text-white">الحاج فريد عبد العزيز</h5>
-                <span className="text-[11px] text-slate-500 font-bold">صاحب مزرعة تسمين • مركز بلبيس، الشرقية</span>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-right">
-              <div className="flex items-center gap-1 text-amber-400 mb-3 text-sm">★★★★★</div>
-              <p className="text-xs sm:text-sm text-slate-300 font-semibold leading-relaxed mb-4">
-                "أهم ميزة إنه شغال معايا في المزرعة أوفلاين لأن الشبكة عندنا في العنبر معدومة. بسجل العلف وأوزن الفراخ وأطبع فاتورة التاجر وتمام التمام."
-              </p>
-              <div className="border-t border-slate-800 pt-3">
-                <h5 className="text-sm font-black text-white">أ/ محمد الشناوي</h5>
-                <span className="text-[11px] text-slate-500 font-bold">مشرف ومربي دواجن • كفر الدوار، البحيرة</span>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 text-right sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-1 text-amber-400 mb-3 text-sm">★★★★★</div>
-              <p className="text-xs sm:text-sm text-slate-300 font-semibold leading-relaxed mb-4">
-                "أنا تاجر دواجن وبسحب من أكتر من عنبر وبوزع للمحلات، ميزة كشوف حسابات العملاء خلتني مسيطر على الديون وكل تاجر ليه حسابه واضح في واتساب."
-              </p>
-              <div className="border-t border-slate-800 pt-3">
-                <h5 className="text-sm font-black text-white">م/ إبراهيم القاضي</h5>
-                <span className="text-[11px] text-slate-500 font-bold">تاجر وموزع دواجن • بنها، القليوبية</span>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* =========================================================
-          8. قسم الأسئلة الشائعة (FAQ Accordion)
-         ========================================================= */}
-      <section id="faq" className="py-20 lg:py-28">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+      {/* ══════════════════════════════════════════════════════════════════
+          TESTIMONIALS
+         ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-24 border-t border-slate-800/50 relative overflow-hidden">
+        <GlowOrbs />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
           <div className="text-center mb-14">
-            <h2 className="text-xs sm:text-sm font-extrabold text-emerald-400 tracking-wider uppercase">كل ما ترغب بمعرفته</h2>
-            <p className="text-2xl sm:text-4xl font-black text-white mt-2 leading-tight">
-              الأسئلة الشائعة وإجاباتها
-            </p>
+            <span className="text-xs font-extrabold text-blue-400 tracking-widest uppercase">ثقة المربين</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">تجارب حقيقية من أرض الواقع</h2>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              { stars: 5, text: '"البرنامج ده ريحني من كابوس الدفاتر. بضغطة زر عارف كسبت كام بالمليم."', name: 'الحاج فريد عبد العزيز', role: 'صاحب مزرعة تسمين • بلبيس، الشرقية' },
+              { stars: 5, text: '"أهم ميزة إنه شغال معايا في المزرعة أوفلاين. بسجل العلف وأطبع فاتورة التاجر وتمام."', name: 'م/ محمد الشناوي', role: 'مربي دواجن • كفر الدوار، البحيرة' },
+              { stars: 5, text: '"أنا تاجر وكشوف حسابات العملاء خلتني مسيطر على الديون. كل تاجر ليه حسابه واضح في واتساب."', name: 'م/ إبراهيم القاضي', role: 'تاجر وموزع دواجن • بنها، القليوبية' },
+            ].map(({ stars, text, name, role }) => (
+              <div key={name} className="bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 text-right transition-all duration-300 hover:-translate-y-1 group">
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: stars }).map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                </div>
+                <p className="text-sm text-slate-300 font-semibold leading-relaxed mb-4 group-hover:text-slate-200 transition-colors">{text}</p>
+                <div className="border-t border-slate-800/60 pt-3">
+                  <h5 className="text-sm font-black text-white">{name}</h5>
+                  <span className="text-[11px] text-slate-500 font-bold">{role}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          FAQ
+         ══════════════════════════════════════════════════════════════════ */}
+      <section id="faq" className="py-24 bg-[#070D1A] border-t border-slate-800/50">
+        <div ref={faqSec.ref} className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14">
+            <span className="text-xs font-extrabold text-emerald-400 tracking-widest uppercase">لديك سؤال؟</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">الأسئلة الشائعة</h2>
           </div>
 
-          <div className="space-y-3.5">
+          <div className={`space-y-3 transition-all duration-700 ${faqSec.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {[
-              {
-                q: "هل يعمل البرنامج بدون إنترنت (أوفلاين)؟",
-                a: "نعم، 100%! تطبيق مزارعنا برو يعمل بشكل كامل دون الحاجة لأي اتصال بالإنترنت في العنابر والمزارع. تسجل بياناتك ومصروفاتك وفواتيرك بحرية تامة."
-              },
-              {
-                q: "هل يمكنني تشغيل البرنامج على أكثر من جهاز؟",
-                a: "نعم، البرنامج متاح كتطبيق لهواتف الأندرويد (APK)، وكذلك تطبيق ويب متطور (PWA) يعمل على الآيفون والكمبيوتر والتابلت."
-              },
-              {
-                q: "كيف أستلم كود التفعيل بعد الدفع؟",
-                a: "بمجرد تحويل قيمة الباقة المختارة عبر فودافون كاش أو إنستاباي، ترسل لنا رمز جهازك (Hardware ID) الظاهر في التطبيق عبر واتساب، ونرسل لك كود التفعيل الفوري في أقل من دقيقة واحدة."
-              },
-              {
-                q: "ماذا يحدث لبياناتي إذا قمت بتغيير هاتفي المحمول؟",
-                a: "بياناتك بأمان تام! يمكنك أخذ نسخة احتياطية من بيانات المزرعة وحفظها على هاتفك أو إرسالها لواتسابك، واستعادتها على أي جهاز جديد بضغطة زر واحدة."
-              },
-              {
-                q: "هل البرنامج مناسب لمزارع البط والمواشي أيضاً؟",
-                a: "نعم، بجانب تخصص البرنامج الأساسي في مزارع التسمين والبياض، يمكنك استخدام نظام المصروفات والإيرادات والفواتير والديون لمزارع البط، الأرانب، وتجارة المواشي بكل كفاءة."
-              }
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden transition"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full p-5 text-right font-black text-sm sm:text-base text-white flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/40 transition"
-                >
-                  <span>{item.q}</span>
-                  {openFaq === idx ? (
-                    <ChevronUp className="w-5 h-5 text-emerald-400 shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
-                  )}
+              { q: 'هل يعمل البرنامج بدون إنترنت؟', a: 'نعم، 100%! مزارعنا برو يعمل بشكل كامل دون الحاجة لأي اتصال بالإنترنت. صُمّم خصيصاً للعنابر والمزارع التي تكون فيها الشبكة ضعيفة أو منعدمة.' },
+              { q: 'هل يمكن تشغيله على أكثر من جهاز؟', a: 'نعم، متاح كـ APK للأندرويد وكتطبيق ويب متقدم (PWA) يعمل على الآيفون والكمبيوتر والتابلت بكفاءة كاملة.' },
+              { q: 'كيف أستلم كود التفعيل بعد الدفع؟', a: 'بمجرد تحويل قيمة الباقة عبر فودافون كاش أو إنستاباي، ترسل لنا رمز جهازك (Hardware ID) عبر واتساب ونرسل لك كود التفعيل في دقيقة واحدة.' },
+              { q: 'ماذا يحدث لبياناتي إذا غيرت هاتفي؟', a: 'بياناتك بأمان تام! تأخذ نسخة احتياطية بضغطة زر وتستعيدها على الجهاز الجديد في ثوانٍ.' },
+              { q: 'هل البرنامج مناسب لمزارع البط والمواشي؟', a: 'بالطبع! نظام المصروفات والإيرادات والفواتير والديون يعمل بكفاءة مع مزارع البط والأرانب وتجارة المواشي.' },
+            ].map(({ q, a }, idx) => (
+              <div key={idx} className="bg-slate-900/70 border border-slate-800 hover:border-slate-700 rounded-2xl overflow-hidden transition-all duration-200">
+                <button onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full p-5 text-right font-black text-sm sm:text-base text-white flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/30 transition">
+                  <span>{q}</span>
+                  {openFaq === idx
+                    ? <ChevronUp className="w-5 h-5 text-emerald-400 shrink-0" />
+                    : <ChevronDown className="w-5 h-5 text-slate-500 shrink-0" />}
                 </button>
                 {openFaq === idx && (
-                  <div className="p-5 pt-0 text-xs sm:text-sm text-slate-300 font-medium leading-relaxed border-t border-slate-800/60 bg-slate-950/40">
-                    {item.a}
+                  <div className="px-5 pb-5 text-sm text-slate-300 font-medium leading-relaxed border-t border-slate-800/60 pt-4 bg-slate-950/40 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {a}
                   </div>
                 )}
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
-      {/* =========================================================
-          9. بانر الختام والدعوة للإجراء (Bottom CTA)
-         ========================================================= */}
-      <section className="py-16 bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-2xl sm:text-4xl font-black mb-4 leading-tight">
-            جاهز لضبط حسابات مزرعتك ومضاعفة أرباحك؟
+      {/* ══════════════════════════════════════════════════════════════════
+          BOTTOM CTA
+         ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-indigo-900/30 to-emerald-900/20" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMDMiLz48L3N2Zz4=')] opacity-100" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold mb-6">
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            جاهز لضبط مزرعتك ومضاعفة أرباحك؟
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight mb-4">
+            انضم لمئات المربين والتجار<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-400 to-blue-400">الذين وثقوا في مزارعنا برو</span>
           </h2>
-          <p className="text-sm sm:text-base text-blue-100 max-w-xl mx-auto mb-8 font-medium">
-            انضم الآن لمئات المربين والتجار الذين وفروا أوقاتهم وحموا أموالهم مع مزارعنا برو.
+          <p className="text-sm sm:text-base text-blue-100 max-w-xl mx-auto mb-10 font-medium">
+            ابدأ بالتحميل أو التواصل معنا الآن. اشتراك بـ ٣٠ ج.م فقط ولا مخاطرة!
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => openWhatsApp('اشتراك مباشر من البانر')}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base shadow-xl flex items-center justify-center gap-2 cursor-pointer transition active:scale-95"
-            >
+            <button onClick={() => openWhatsApp('اشتراك من Bottom CTA')}
+              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base shadow-xl flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer">
               <MessageCircle className="w-5 h-5" />
-              <span>تواصل واشترك الآن عبر واتساب</span>
+              اشترك عبر واتساب الآن
             </button>
-            <a
-              href={APK_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer transition shadow-lg no-underline"
-            >
+            <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer"
+              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-base flex items-center justify-center gap-2 transition cursor-pointer no-underline">
               <Download className="w-5 h-5" />
-              <span>تحميل تطبيق أندرويد (APK)</span>
+              تحميل APK مجاناً
             </a>
-            <button
-              onClick={handleOpenApp}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer transition"
-            >
+            <button onClick={handleOpenApp}
+              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-blue-600/50 hover:bg-blue-600 border border-blue-500/40 text-white font-extrabold text-base flex items-center justify-center gap-2 transition cursor-pointer">
               <LayoutGrid className="w-5 h-5" />
-              <span>فتح لوحة التحكم</span>
+              تجربة البرنامج الآن
             </button>
           </div>
         </div>
       </section>
 
-      {/* =========================================================
-          10. التذييل السفلي (Footer)
-         ========================================================= */}
-      <footer className="bg-[#050A12] border-t border-slate-900 py-12 text-slate-400 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* ══════════════════════════════════════════════════════════════════
+          FOOTER
+         ══════════════════════════════════════════════════════════════════ */}
+      <footer className="bg-[#040810] border-t border-slate-900 py-10 text-slate-400 text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="text-center md:text-right">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-              <span className="text-base font-black text-white">مزارعنا برو - Mazareana Pro</span>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">2026</span>
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-1.5">
+              <span className="text-sm font-black text-white">مزارعنا برو – Mazareana Pro</span>
+              <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">2026</span>
             </div>
-            <p className="text-slate-500 font-medium">نظام الإدارة المالية الشامل لمزارع الدواجن والإنتاج الحيواني في مصر والوطن العربي.</p>
+            <p className="text-slate-500 font-medium">نظام الإدارة الشامل لمزارع الدواجن والإنتاج الحيواني في مصر والوطن العربي.</p>
           </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 font-bold text-slate-300">
-            <button onClick={() => openWhatsApp('فودافون كاش')} className="hover:text-emerald-400 transition cursor-pointer">
-              📞 واتساب: {primaryPhone}
+          <div className="flex flex-wrap items-center justify-center gap-5 font-bold text-slate-300">
+            <button onClick={() => openWhatsApp('التواصل')} className="hover:text-emerald-400 transition cursor-pointer flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4 text-emerald-500" />
+              {primaryPhone}
             </button>
-            <span>•</span>
-            <button onClick={() => openWhatsApp('دعم فني')} className="hover:text-emerald-400 transition cursor-pointer">
-              📞 هاتف الدعم: {secondaryPhone}
+            <span className="text-slate-700">•</span>
+            <button onClick={() => openWhatsApp('الدعم')} className="hover:text-emerald-400 transition cursor-pointer">
+              📞 {secondaryPhone}
             </button>
           </div>
         </div>
-        <div className="text-center text-slate-600 text-[11px] font-bold mt-8">
-          جميع الحقوق محفوظة © ٢٠٢٦ مزارعنا برو • صمم خصيصاً لخدمة الإنتاج الداجني
+        <div className="text-center text-slate-700 text-[11px] font-bold mt-6">
+          جميع الحقوق محفوظة © ٢٠٢٦ مزارعنا برو • صُمّم لخدمة مربي الدواجن
         </div>
       </footer>
 
-      {/* =========================================================
-          11. زر واتساب العائم السريع (Floating Quick Action)
-         ========================================================= */}
-      <div className="fixed bottom-5 left-5 z-40 flex items-center gap-2">
-        <button
-          onClick={() => openWhatsApp('الزر العائم')}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-full shadow-2xl shadow-emerald-600/40 font-black text-xs cursor-pointer transition active:scale-95 group"
-          title="تواصل معنا عبر واتساب"
-        >
+      {/* ══════════════════════════════════════════════════════════════════
+          FLOATING WHATSAPP BUTTON
+         ══════════════════════════════════════════════════════════════════ */}
+      <div className="fixed bottom-5 left-5 z-40">
+        <button onClick={() => openWhatsApp('الزر العائم')}
+          className="relative group flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white pl-4 pr-5 py-3 rounded-full shadow-2xl shadow-emerald-600/50 font-black text-xs cursor-pointer transition-all active:scale-95 hover:-translate-y-0.5">
           <MessageCircle className="w-5 h-5 fill-white" />
-          <span className="hidden sm:inline">اشترك الآن عبر واتساب</span>
+          <span className="hidden sm:inline">اشترك عبر واتساب</span>
+          {/* Ping animation */}
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-[#060C18]">
+            <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75" />
+          </span>
         </button>
       </div>
 
