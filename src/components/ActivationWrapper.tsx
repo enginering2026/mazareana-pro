@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { LandingPage } from '@/pages/LandingPage';
 import {
   Crown,
@@ -1409,6 +1410,7 @@ export const ActivationWrapper: React.FC<ActivationWrapperProps> = ({
   children,
   onActivated,
 }) => {
+  const location = useLocation();
   const [initialData] = useState(getInitialDeviceAndActivation);
   const [hardwareId, setHardwareId] = useState<string>(initialData.hardwareId);
   const [isActivated, setIsActivated] = useState<boolean>(initialData.isActivated);
@@ -1493,6 +1495,13 @@ export const ActivationWrapper: React.FC<ActivationWrapperProps> = ({
     setIsActivated(false);
     setLicenseInfo(null);
   };
+
+  // إذا كان المسار هو صفحة الهبوط أو الموقع الرئيسي، اعرضها مباشرة للجميع دون حجب
+  if (location.pathname === '/' || location.pathname === '/landing') {
+    return (
+      <>{typeof children === 'function' ? children({ licenseInfo, onLogout: handleResetActivation }) : children}</>
+    );
+  }
 
   if (isActivated) {
     return (

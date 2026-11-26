@@ -92,6 +92,7 @@ const queryClient = new QueryClient({
 
 // ── Onboarding gate: show if first launch and no farms saved ──────────────────
 const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
   const [onboardingDone, setOnboardingDone] = useState<boolean>(() => {
     try {
       // Already completed onboarding
@@ -110,6 +111,11 @@ const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({ children }) =
       return false;
     }
   });
+
+  // لا يتم حجب موقع ومميزات البرنامج بتهيئة المزرعة
+  if (location.pathname === '/' || location.pathname === '/landing' || location.pathname === '/auth') {
+    return <>{children}</>;
+  }
 
   if (!onboardingDone) {
     return (
@@ -137,8 +143,9 @@ const App = () => (
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/landing" element={<LandingPage />} />
-            <Route path="/" element={
+            <Route path="/app" element={
               <ProtectedRoute>
                 <Layout>
                   <Dashboard />

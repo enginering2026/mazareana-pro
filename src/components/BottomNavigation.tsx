@@ -21,7 +21,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { title: "الإيرادات", url: "/revenues", icon: TrendingUp },
   { title: "المصروفات", url: "/expenses", icon: TrendingDown },
-  { title: "الرئيسية", url: "/", icon: LayoutGrid },
+  { title: "الرئيسية", url: "/app", icon: LayoutGrid },
   { title: "العملاء", url: "/clients", icon: Users },
   { title: "الإعدادات", url: "/settings", icon: SettingsIcon },
 ];
@@ -31,8 +31,8 @@ export function BottomNavigation() {
   const currentPath = location.pathname;
 
   const isActive = (path: string) => {
-    if (path === "/" && currentPath === "/") return true;
-    if (path !== "/" && currentPath.startsWith(path)) return true;
+    if (path === "/app" && currentPath === "/app") return true;
+    if (path !== "/app" && currentPath.startsWith(path)) return true;
     return false;
   };
 

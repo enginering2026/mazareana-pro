@@ -24,8 +24,11 @@ import {
   Calendar,
   PhoneCall,
   Menu,
-  X
+  X,
+  LayoutGrid
 } from 'lucide-react';
+
+export const APK_DOWNLOAD_URL = 'https://www.mediafire.com/file/vsl077zreym4guk/MazareanaPro.apk/file';
 
 interface LandingPageProps {
   onOpenLogin?: () => void;
@@ -42,6 +45,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [activeTab, setActiveTab] = useState<'dashboard' | 'cycles' | 'invoices' | 'reports'>('dashboard');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
+  const [isAppActivated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('app_activated') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const primaryPhone = '01015965832';
   const secondaryPhone = '01042811502';
 
@@ -52,17 +63,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     window.open(`https://wa.me/2${primaryPhone}?text=${text}`, '_blank');
   };
 
+  const handleOpenApp = () => {
+    window.location.hash = '#/app';
+  };
+
+  const handleDownloadApk = () => {
+    window.open(APK_DOWNLOAD_URL, '_blank');
+  };
+
   const handleDemoStart = () => {
-    if (onOpenLogin) {
-      onOpenLogin();
-    } else {
-      window.location.hash = '#/';
-    }
+    handleOpenApp();
   };
 
   return (
     <div className="min-h-screen bg-[#0A101D] text-slate-100 selection:bg-emerald-500 selection:text-white" dir="rtl" style={{ fontFamily: "'Cairo', sans-serif" }}>
       
+      {/* شريط ترحيب بالعملاء أصحاب النسخ المفعلة */}
+      {isAppActivated && (
+        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-blue-700 text-white px-4 py-2.5 text-center text-xs sm:text-sm font-bold flex flex-wrap items-center justify-center gap-2 sm:gap-4 shadow-lg border-b border-emerald-500/30">
+          <span className="flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>مرحباً بك! نسختك من مزارعنا برو مفعلة وجاهزة للعمل</span>
+          </span>
+          <button
+            onClick={handleOpenApp}
+            className="bg-white text-emerald-900 hover:bg-emerald-50 px-3.5 py-1 rounded-xl text-xs font-black shadow transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>الدخول إلى لوحة التحكم 🚀</span>
+          </button>
+        </div>
+      )}
+
       {/* =========================================================
           1. الشريط العلوي الثابت (Navigation Bar)
          ========================================================= */}
@@ -87,37 +119,54 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* روابط القائمة للشاشات الكبيرة */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-300">
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-300">
             <a href="#features" className="hover:text-emerald-400 transition">المميزات</a>
             <a href="#solutions" className="hover:text-emerald-400 transition">لماذا مزارعنا؟</a>
             <a href="#screens" className="hover:text-emerald-400 transition">شاشات البرنامج</a>
+            <a href="#download" className="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
+              <Smartphone className="w-4 h-4" />
+              <span>تحميل APK</span>
+            </a>
             <a href="#pricing" className="hover:text-emerald-400 transition">الأسعار والباقات</a>
             <a href="#faq" className="hover:text-emerald-400 transition">الأسئلة الشائعة</a>
           </nav>
 
           {/* أزرار الإجراء السريعة */}
-          <div className="hidden sm:flex items-center gap-3">
-            <button
-              onClick={() => openWhatsApp('استفسار مباشر')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-extrabold transition cursor-pointer"
+          <div className="hidden sm:flex items-center gap-2.5">
+            {/* زر تحميل APK */}
+            <a
+              href={APK_DOWNLOAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-black transition cursor-pointer no-underline"
+              title="تحميل تطبيق أندرويد APK برابط مباشر من ميديا فاير"
             >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
-              <span>واتساب</span>
+              <Download className="w-4 h-4" />
+              <span>تحميل APK</span>
+            </a>
+
+            {/* زر دخول البرنامج */}
+            <button
+              onClick={handleOpenApp}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-blue-600/25 active:scale-95 transition cursor-pointer"
+            >
+              <LayoutGrid className="w-4 h-4 text-emerald-300" />
+              <span>دخول البرنامج</span>
             </button>
 
+            {/* زر واتساب */}
             <button
-              onClick={onOpenLogin || handleDemoStart}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-blue-600/25 active:scale-95 transition cursor-pointer"
+              onClick={() => openWhatsApp('استفسار مباشر')}
+              className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer"
             >
-              <Key className="w-4 h-4" />
-              <span>تسجيل الدخول / التفعيل</span>
+              <MessageCircle className="w-4 h-4 text-emerald-400" />
             </button>
           </div>
 
           {/* زر القائمة للشاشات الصغيرة */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+            className="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -125,20 +174,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* القائمة المنسدلة للموبايل */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-[#0F172A] border-b border-slate-800 px-6 py-5 space-y-4 text-right animate-in fade-in duration-200">
+          <div className="lg:hidden bg-[#0F172A] border-b border-slate-800 px-6 py-5 space-y-4 text-right animate-in fade-in duration-200">
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">المميزات</a>
             <a href="#solutions" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">لماذا مزارعنا برو؟</a>
             <a href="#screens" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">معاينة الشاشات</a>
+            <a href="#download" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-emerald-400">📱 تحميل تطبيق أندرويد (APK)</a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">الأسعار والباقات</a>
             <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-bold text-slate-200">الأسئلة الشائعة</a>
             
             <div className="pt-4 border-t border-slate-800 flex flex-col gap-2.5">
+              <a
+                href={APK_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 no-underline"
+              >
+                <Download className="w-4 h-4" />
+                <span>تحميل تطبيق أندرويد (APK)</span>
+              </a>
+
               <button
-                onClick={() => { setMobileMenuOpen(false); (onOpenLogin || handleDemoStart)(); }}
+                onClick={() => { setMobileMenuOpen(false); handleOpenApp(); }}
                 className="w-full py-3 rounded-xl bg-blue-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30"
               >
-                <Key className="w-4 h-4" />
-                <span>تسجيل الدخول / تفعيل الكود</span>
+                <LayoutGrid className="w-4 h-4" />
+                <span>فتح البرنامج / لوحة التحكم</span>
               </button>
 
               <button
@@ -184,21 +245,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
 
           {/* أزرار الإجراء الرئيسية */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-2xl mx-auto">
+            {/* زر دخول البرنامج المباشر */}
             <button
-              onClick={onOpenLogin || handleDemoStart}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-base shadow-xl shadow-blue-600/30 flex items-center justify-center gap-3 active:scale-95 transition cursor-pointer"
+              onClick={handleOpenApp}
+              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm sm:text-base shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition cursor-pointer"
             >
-              <Key className="w-5 h-5 text-emerald-300" />
-              <span>دخول النظام / تفعيل الكود</span>
+              <LayoutGrid className="w-5 h-5 text-emerald-300" />
+              <span>دخول البرنامج / لوحة التحكم</span>
             </button>
 
-            <button
-              onClick={() => openWhatsApp('باقة جديدة')}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base shadow-xl shadow-emerald-600/25 flex items-center justify-center gap-3 active:scale-95 transition cursor-pointer"
+            {/* زر تحميل APK المباشر من ميديا فاير */}
+            <a
+              href={APK_DOWNLOAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm sm:text-base shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition cursor-pointer no-underline"
             >
-              <MessageCircle className="w-5 h-5" />
-              <span>اشترك عبر واتساب</span>
+              <Download className="w-5 h-5" />
+              <span>تحميل تطبيق أندرويد (APK)</span>
+            </a>
+
+            {/* زر الاشتراك والتواصل عبر واتساب */}
+            <button
+              onClick={() => openWhatsApp('استفسار واشتراك')}
+              className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 font-bold text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 active:scale-95 transition cursor-pointer"
+            >
+              <MessageCircle className="w-5 h-5 text-emerald-400" />
+              <span>اشتراك عبر واتساب</span>
             </button>
           </div>
 
@@ -634,11 +708,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="pt-4 border-t border-slate-800/80 text-center">
               <button
-                onClick={onOpenLogin || handleDemoStart}
-                className="inline-flex items-center gap-2 text-xs font-black text-blue-400 hover:text-blue-300 transition"
+                onClick={handleOpenApp}
+                className="inline-flex items-center gap-2 text-xs font-black text-blue-400 hover:text-blue-300 transition cursor-pointer"
               >
-                <span>افتح البرنامج الآن وجرّب بنفسك</span>
-                <ArrowRight className="w-4 h-4 rotate-180" />
+                <span>افتح البرنامج الآن وجرّب بنفسك ←</span>
               </button>
             </div>
           </div>
@@ -647,7 +720,100 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================
-          6. خطط الأسعار والباقات (Pricing Plans)
+          6. قسم تحميل تطبيق الأندرويد المباشر (APK Download Section)
+         ========================================================= */}
+      <section id="download" className="py-20 bg-gradient-to-b from-[#080E1C] via-[#0E1B33] to-[#080E1C] relative border-t border-b border-blue-900/30 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-blue-950/70 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-12 shadow-2xl text-center">
+            
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black mb-6">
+              <Smartphone className="w-4 h-4 text-emerald-400" />
+              <span>تطبيق أندرويد الأصلي متاح الآن للتحميل المباشر</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight max-w-2xl mx-auto">
+              حمّل تطبيق <span className="text-emerald-400">مزارعنا برو</span> بصيغة APK مباشرة على هاتفك
+            </h2>
+
+            <p className="mt-4 text-xs sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed font-medium">
+              استمتع بأقوى تجربة لإدارة مزرعتك وحساباتك بسرعة فائقة وبدون الحاجة لإنترنت. ملف APK خفيف وآمن 100% وجاهز للتثبيت على جميع هواتف الأندرويد.
+            </p>
+
+            {/* زر التحميل الكبير من MediaFire */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href={APK_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-base sm:text-lg shadow-2xl shadow-emerald-500/30 flex items-center justify-center gap-3 transition active:scale-95 cursor-pointer no-underline"
+              >
+                <Download className="w-6 h-6 stroke-[2.5]" />
+                <span>تحميل MazareanaPro.apk (رابط ميديا فاير السريع)</span>
+              </a>
+
+              <button
+                onClick={handleOpenApp}
+                className="w-full sm:w-auto px-8 py-5 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 text-white border border-slate-700 font-black text-base flex items-center justify-center gap-2.5 transition active:scale-95 cursor-pointer"
+              >
+                <ExternalLink className="w-5 h-5 text-blue-400" />
+                <span>أو تشغيل البرنامج في المتصفح</span>
+              </button>
+            </div>
+
+            {/* خطوات التثبيت السريعة */}
+            <div className="mt-12 pt-8 border-t border-slate-800/80">
+              <h4 className="text-sm font-black text-slate-300 mb-6">خطوات التثبيت السريعة في دقيقة واحدة:</h4>
+              <div className="grid sm:grid-cols-3 gap-4 text-right">
+                
+                <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 font-black flex items-center justify-center shrink-0 text-sm">
+                    ١
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-black text-white mb-1">اضغط تحميل</h5>
+                    <p className="text-[11px] text-slate-400 leading-normal">
+                      اضغط على زر التحميل وسيتم تنزيل ملف APK الصغير على هاتفك من MediaFire خلال ثوانٍ.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 font-black flex items-center justify-center shrink-0 text-sm">
+                    ٢
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-black text-white mb-1">السماح بالتثبيت</h5>
+                    <p className="text-[11px] text-slate-400 leading-normal">
+                      افتح الملف من الإشعارات أو التنزيلات، وإذا طلب هاتفك السماح بالتثبيت اختر "السماح".
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 font-black flex items-center justify-center shrink-0 text-sm">
+                    ٣
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-black text-white mb-1">افتح وابدأ الإدارة</h5>
+                    <p className="text-[11px] text-slate-400 leading-normal">
+                      ستجد أيقونة التطبيق على شاشة موبايلك، افتحه وابدأ حسابات دورتك فوراً!
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* =========================================================
+          7. خطط الأسعار والباقات (Pricing Plans)
          ========================================================= */}
       <section id="pricing" className="py-20 lg:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -927,12 +1093,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <MessageCircle className="w-5 h-5" />
               <span>تواصل واشترك الآن عبر واتساب</span>
             </button>
+            <a
+              href={APK_DOWNLOAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer transition shadow-lg no-underline"
+            >
+              <Download className="w-5 h-5" />
+              <span>تحميل تطبيق أندرويد (APK)</span>
+            </a>
             <button
-              onClick={onOpenLogin || handleDemoStart}
+              onClick={handleOpenApp}
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer transition"
             >
-              <Key className="w-5 h-5" />
-              <span>دخول النظام وتفعيل الكود</span>
+              <LayoutGrid className="w-5 h-5" />
+              <span>فتح لوحة التحكم</span>
             </button>
           </div>
         </div>

@@ -124,6 +124,15 @@ export const Header = () => {
           className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shadow-2xs border border-slate-200/90 dark:border-slate-700 select-none shrink-0"
         />
 
+        {/* زر العودة لموقع ومميزات البرنامج */}
+        <a
+          href="#/"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-950/60 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-blue-700 text-[11px] font-black transition select-none"
+          title="زيارة موقع ومميزات مزارعنا برو"
+        >
+          <span>🌐 موقع البرنامج</span>
+        </a>
+
         {/* Notifications Popover */}
         <Popover open={showNotifications} onOpenChange={setShowNotifications}>
           <PopoverTrigger asChild>

@@ -3,7 +3,7 @@
   "short_name": "مزارعنا",
   "description": "نظام إدارة مالية شامل لمزارع الدواجن والإنتاج الحيواني",
   "id": "/mazareana-pro/",
-  "start_url": "/mazareana-pro/",
+  "start_url": "/mazareana-pro/#/app",
   "scope": "/mazareana-pro/",
   "display": "standalone",
   "orientation": "portrait",
