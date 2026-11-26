@@ -7,6 +7,7 @@ import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ActivationWrapper } from "@/components/ActivationWrapper";
 import { OnboardingSetup } from "@/components/OnboardingSetup";
+import LandingPage from "./pages/LandingPage";
 import { Loader2 } from "lucide-react";
 
 
@@ -136,6 +137,7 @@ const App = () => (
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout>

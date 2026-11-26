@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LandingPage } from '@/pages/LandingPage';
 import {
   Crown,
   Check,
@@ -454,7 +455,15 @@ export const ActivationScreen: React.FC<{
   isTampered?: boolean;
 }> = ({ hardwareId: propHardwareId, onSuccess, triggerToast, expiredNotice, isTampered }) => {
   const [hardwareId, setHardwareId] = useState(propHardwareId || getPersistentDeviceId());
-  const [view, setView] = useState<'login' | 'plans'>('login');
+  const initialView = () => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hash.includes('login')) return 'login';
+      if (window.location.hash.includes('plans')) return 'plans';
+      if ((window as any).AndroidBridge) return 'login';
+    }
+    return 'landing';
+  };
+  const [view, setView] = useState<'login' | 'plans' | 'landing'>(initialView);
   const [selectedPlanId, setSelectedPlanId] = useState('yearly');
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
 
@@ -648,29 +657,66 @@ export const ActivationScreen: React.FC<{
   };
 
   /* =========================================================
-     الشاشة الأولى: شاشة تسجيل الدخول بكود التفعيل (Login Screen)
+     الشاشة الأولى: شاشة الموقع التعريفي (Landing Page)
+     ========================================================= */
+  if (view === 'landing') {
+    return (
+      <LandingPage
+        onOpenLogin={() => {
+          setView('login');
+          triggerHaptic('light');
+        }}
+        onOpenPlans={() => {
+          setView('plans');
+          triggerHaptic('light');
+        }}
+        hardwareId={hardwareId}
+      />
+    );
+  }
+
+  /* =========================================================
+     الشاشة الثانية: شاشة تسجيل الدخول بكود التفعيل (Login Screen)
      مطابقة تماماً للصورة الثالثة media_1794505057785_30dbd6c8.jpg
      ========================================================= */
   if (view === 'login') {
     return (
-      <div className="flex-1 flex flex-col bg-[#F1F5FB] min-h-screen" dir="rtl">
-        {/* الجزء العلوي الأزرق الملكي الداكن (Hero Header) */}
-        <div className="relative bg-gradient-to-b from-[#11255A] via-[#193B8E] to-[#1E50C5] text-white pt-10 pb-16 px-6 text-center overflow-hidden">
-          {/* دوائر زخرفية في الخلفية */}
-          <div className="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-white/5 pointer-events-none" />
-          <div className="absolute top-28 -left-16 w-48 h-48 rounded-full border border-white/10 pointer-events-none" />
-
-          <div className="relative z-10">
-            <AppLogoBadge />
-
-            <h1 className="text-3xl font-black mt-3.5 tracking-tight">
-              {CONFIG.appName}
-            </h1>
-            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
-              {CONFIG.appSubtitle}
-            </p>
+      <div className="min-h-screen bg-[#E9EEF7] flex justify-center p-0 sm:p-4 selection:bg-blue-600 selection:text-white" dir="rtl">
+        <div className="w-full max-w-lg min-h-screen sm:min-h-0 bg-[#F4F7FC] relative shadow-2xl sm:rounded-[36px] overflow-x-hidden flex flex-col">
+          {/* شريط العودة للموقع التعريفي ومميزات البرنامج */}
+          <div className="px-5 py-2.5 bg-[#11255A] flex items-center justify-between text-xs font-bold border-b border-white/10">
+            <button
+              type="button"
+              onClick={() => {
+                setView('landing');
+                triggerHaptic('light');
+              }}
+              className="text-blue-200 hover:text-white flex items-center gap-1.5 transition cursor-pointer py-1"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              <span>موقع ومميزات البرنامج</span>
+            </button>
+            <span className="text-[11px] text-blue-300/80 font-mono">ID: {hardwareId}</span>
           </div>
-        </div>
+
+          <div className="flex-1 flex flex-col bg-[#F1F5FB]">
+            {/* الجزء العلوي الأزرق الملكي الداكن (Hero Header) */}
+            <div className="relative bg-gradient-to-b from-[#11255A] via-[#193B8E] to-[#1E50C5] text-white pt-8 pb-16 px-6 text-center overflow-hidden">
+              {/* دوائر زخرفية في الخلفية */}
+              <div className="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-white/5 pointer-events-none" />
+              <div className="absolute top-28 -left-16 w-48 h-48 rounded-full border border-white/10 pointer-events-none" />
+
+              <div className="relative z-10">
+                <AppLogoBadge />
+
+                <h1 className="text-3xl font-black mt-3.5 tracking-tight">
+                  {CONFIG.appName}
+                </h1>
+                <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+                  {CONFIG.appSubtitle}
+                </p>
+              </div>
+            </div>
 
         {/* الكارت الأبيض بحواف دائرية علوية كبيرة */}
         <div className="relative z-20 -mt-8 mx-4 bg-white rounded-[32px] p-6 shadow-xl border border-slate-100 flex-1 flex flex-col justify-between mb-4">
@@ -847,18 +893,48 @@ export const ActivationScreen: React.FC<{
           {CONFIG.appNameEn} © ٢٠٢٦
         </div>
       </div>
+    </div>
+  </div>
     );
   }
 
   /* =========================================================
-     الشاشة الثانية: شاشة اختيار الباقات (Pricing Plans Screen)
+     الشاشة الثالثة: شاشة اختيار الباقات (Pricing Plans Screen)
      مطابقة تماماً للصورة الثانية media_1794505057783_7d068ce5.jpg
      ========================================================= */
   return (
-    <div className="flex-1 flex flex-col bg-[#F4F7FC] min-h-screen relative overflow-x-hidden selection:bg-blue-600 selection:text-white" dir="rtl">
-      {/* خلفية زخرفية دائرية علوية مطابقة للصورة */}
-      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-200/45 pointer-events-none" />
-      <div className="absolute top-12 -right-14 w-36 h-36 rounded-full bg-blue-200/35 pointer-events-none" />
+    <div className="min-h-screen bg-[#E9EEF7] flex justify-center p-0 sm:p-4 selection:bg-blue-600 selection:text-white" dir="rtl">
+      <div className="w-full max-w-lg min-h-screen sm:min-h-0 bg-[#F4F7FC] relative shadow-2xl sm:rounded-[36px] overflow-x-hidden flex flex-col">
+        {/* شريط العودة للموقع */}
+        <div className="px-5 py-2.5 bg-white/80 backdrop-blur-sm flex items-center justify-between text-xs font-bold border-b border-slate-200/80">
+          <button
+            type="button"
+            onClick={() => {
+              setView('landing');
+              triggerHaptic('light');
+            }}
+            className="text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer py-1"
+          >
+            <ArrowRight className="w-3.5 h-3.5" />
+            <span>العودة للموقع التعريفي</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setView('login');
+              triggerHaptic('light');
+            }}
+            className="text-blue-600 hover:text-blue-800 font-extrabold flex items-center gap-1 transition cursor-pointer py-1"
+          >
+            <span>تسجيل الدخول</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="flex-1 flex flex-col bg-[#F4F7FC] relative overflow-x-hidden" dir="rtl">
+          {/* خلفية زخرفية دائرية علوية مطابقة للصورة */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-200/45 pointer-events-none" />
+          <div className="absolute top-12 -right-14 w-36 h-36 rounded-full bg-blue-200/35 pointer-events-none" />
 
       <div className="relative z-10 px-5 pt-6 pb-32 flex-1">
         {/* الهيدر العلوي */}
@@ -1315,6 +1391,8 @@ export const ActivationScreen: React.FC<{
         </div>
       )}
     </div>
+  </div>
+</div>
   );
 };
 
@@ -1454,42 +1532,40 @@ export const ActivationWrapper: React.FC<ActivationWrapperProps> = ({
     <div
       dir="rtl"
       style={{ fontFamily: "'Cairo', sans-serif" }}
-      className="min-h-screen bg-[#E9EEF7] text-slate-900 flex justify-center selection:bg-blue-600 selection:text-white"
+      className="min-h-screen selection:bg-blue-600 selection:text-white"
     >
-      <div className="w-full max-w-lg min-h-screen bg-[#F4F7FC] relative shadow-2xl overflow-x-hidden flex flex-col">
-        {/* إشعار Toast علوي تفاعلي مطابقة للتصميم */}
-        {toastBanner && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[420px] animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="bg-slate-900/95 backdrop-blur-md text-white px-4 py-3.5 rounded-2xl shadow-2xl border border-white/10 flex items-start gap-3">
-              <div className="mt-0.5 shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div className="flex-1 text-right">
-                <p className="text-sm font-bold leading-snug">{toastBanner.title}</p>
-                {toastBanner.subtitle && (
-                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
-                    {toastBanner.subtitle}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => setToastBanner(null)}
-                className="text-slate-400 hover:text-white p-1 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {/* إشعار Toast علوي تفاعلي مطابقة للتصميم */}
+      {toastBanner && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[420px] animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-slate-900/95 backdrop-blur-md text-white px-4 py-3.5 rounded-2xl shadow-2xl border border-white/10 flex items-start gap-3">
+            <div className="mt-0.5 shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             </div>
+            <div className="flex-1 text-right">
+              <p className="text-sm font-bold leading-snug">{toastBanner.title}</p>
+              {toastBanner.subtitle && (
+                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                  {toastBanner.subtitle}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setToastBanner(null)}
+              className="text-slate-400 hover:text-white p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        <ActivationScreen
-          hardwareId={hardwareId}
-          onSuccess={handleActivationSuccess}
-          triggerToast={triggerToast}
-          expiredNotice={licenseStatus?.errorNotice}
-          isTampered={licenseStatus?.isTampered}
-        />
-      </div>
+      <ActivationScreen
+        hardwareId={hardwareId}
+        onSuccess={handleActivationSuccess}
+        triggerToast={triggerToast}
+        expiredNotice={licenseStatus?.errorNotice}
+        isTampered={licenseStatus?.isTampered}
+      />
     </div>
   );
 };
